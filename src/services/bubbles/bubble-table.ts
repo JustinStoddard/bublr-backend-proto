@@ -4,7 +4,7 @@ import { Bubble, BubbleInput, BubblePage, BubblePatch, BubblesFilter } from "./b
 
 @Entity("bubbles")
 export class BubbleEntity extends BaseEntity {
-  constructor() { super() }
+  constructor() { super() };
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -124,6 +124,6 @@ export class BubblesTable {
       })
       .where('id = :id', { id })
       .returning('*')
-      .execute()
+      .execute();
   };
 };

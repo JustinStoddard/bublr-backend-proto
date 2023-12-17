@@ -6,6 +6,9 @@ export type Message = {
   ownerId: string;
   parentBubbleId: string;
   content: string;
+  likes: number;
+  dislikes: number;
+  reports: number;
 };
 
 export type MessageInput = {
@@ -17,6 +20,9 @@ export type MessageInput = {
 export type MessagePatch = {
   id: string;
   content?: string;
+  likes?: number;
+  dislikes?: number;
+  reports?: number;
 };
 
 export type MessagesFilter = {

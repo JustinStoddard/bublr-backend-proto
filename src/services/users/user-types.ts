@@ -31,7 +31,7 @@ export type UserPatch = {
   accountType?: AccountType;
 };
 
-export type UserFilter = {
+export type UsersFilter = {
   accountType: AccountType;
   offset?: number;
   limit?: number;

@@ -10,7 +10,10 @@ export class Messages1702786695580 implements MigrationInterface {
         deleted_at timestamptz,
         owner_id text not null,
         parent_bubble_id text not null,
-        content text not null
+        content text not null,
+        likes integer not null default 0,
+        dislikes integer not null default 0,
+        reports integer not null default 0
       )
       `
     );
