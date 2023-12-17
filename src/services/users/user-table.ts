@@ -65,8 +65,17 @@ export class UsersTable {
     }
     if (filter?.strikes) {
       query = query.where({
-        strikes: MoreThanOrEqual(3),
+        strikes: MoreThanOrEqual(0),
       });
+    }
+    if (filter?.displayName) {
+      query = query.where('users.display_name = :displayName');
+    }
+    if (filter?.handle) {
+      query = query.where('users.handle = :handle');
+    }
+    if (filter?.email) {
+      query = query.where('users.email = :email');
     }
 
     return query.setParameters(filter);
@@ -86,6 +95,10 @@ export class UsersTable {
         id,
       }
     }).then(res => res[0]);
+  };
+
+  findOne = async (filter: UsersFilter): Promise<User> => {
+    return (await this.find(filter)).rows[0];
   };
 
   find = async (filter: UsersFilter): Promise<UserPage> => {

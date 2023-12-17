@@ -1,6 +1,5 @@
 export type AppErrorArgs = {
   code: string;
-  title?: string;
   issue?: string;
   meta?: { [x:string]: any };
 }
@@ -26,4 +25,6 @@ export enum Issues {
   BUBBLE_NOT_FOUND = 'bubble-not-found',
   MESSAGE_NOT_FOUND = 'message-not-found',
   USER_NOT_FOUND = 'user-not-found',
+  USER_ALREADY_EXISTS = 'user-already-exists',
+  PASSWORD_INCORRECT = 'password-incorrect',
 };

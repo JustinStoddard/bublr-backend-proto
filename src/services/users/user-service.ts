@@ -1,8 +1,11 @@
 import { parse as uuidParse } from 'uuid';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { get } from "../../common/utils/env"
 import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 import { LogCategory, LogFactory } from "../../common/logging/logger";
 import { UsersTable } from "./user-table";
-import { User, UserInput, UserPage, UserPatch, UsersFilter } from './user-types';
+import { User, UserInput, UserLoginInput, UserPage, UserPatch, UsersFilter } from './user-types';
 
 
 export class UserService {
@@ -16,6 +19,26 @@ export class UserService {
     throw new AppError({
       code: ErrorCodes.ERR_NOT_FOUND,
       issue: Issues.USER_NOT_FOUND,
+      meta: {
+        ...args,
+      }
+    });
+  };
+
+  throwUserAlreadyExistsError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_FORBIDDEN,
+      issue: Issues.USER_ALREADY_EXISTS,
+      meta: {
+        ...args,
+      }
+    });
+  };
+
+  throwPasswordIncorrectError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_FORBIDDEN,
+      issue: Issues.PASSWORD_INCORRECT,
       meta: {
         ...args,
       }
@@ -56,6 +79,11 @@ export class UserService {
     this.assertRequiredArgument('accountType', input.accountType);
   };
 
+  assertUserLoginInput = (input: UserLoginInput) => {
+    this.assertRequiredArgument('email', input.email);
+    this.assertRequiredArgument('password', input.password);
+  };
+
   assertUserPatch = (patch: UserPatch) => {
     this.assertArgumentUuid('id', patch.id);
   };
@@ -63,6 +91,16 @@ export class UserService {
   register = async (input: UserInput): Promise<User> => {
     this.assertUserInput(input);
 
+    const filter: UsersFilter = {
+      handle: input.handle,
+      email: input.email,
+    };
+    const existingUser: User = await this.users.findOne(filter);
+
+    if (existingUser) this.throwUserAlreadyExistsError({});
+
+    const hashedPassword = await bcrypt.hash(input.password, 10);
+    input.password = hashedPassword;
     const user: User = await this.users.create(input);
 
     this.log.info({ message: `registered user: ${user.id}` });
@@ -70,8 +108,35 @@ export class UserService {
     return user;
   };
 
-  login = async () => {
+  login = async (input: UserLoginInput): Promise<string> => {
+    this.assertUserLoginInput(input);
 
+    const filter: UsersFilter = {
+      email: input.email,
+    };
+    const user: User = await this.users.findOne(filter);
+
+    if (!user) this.throwNotFoundError({ email: input.email });
+
+    const passwordMatch = await bcrypt.compare(user.password, input.password);
+    if (!passwordMatch) this.throwPasswordIncorrectError({});
+    
+    const secret = get('BUBLR_JWT_SECRET');
+    const token = jwt.sign({ email: user.email, handle: user.handle }, secret, { expiresIn: '4h' });
+
+    return token;
+  };
+
+  get = async (id: string): Promise<User> => {
+    this.assertArgumentUuid('id', id);
+
+    let user: User = await this.users.get(id);
+
+    if (!user) this.throwNotFoundError({ id });
+
+    this.log.info({ message: `fetched user: ${user.id}` });
+
+    return user;
   };
 
   find = async (filter: UsersFilter): Promise<UserPage> => {
