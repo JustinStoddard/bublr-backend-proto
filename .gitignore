@@ -1,0 +1,8 @@
+**/\.*
+
+!.gitignore
+!.circleci/
+!.github
+
+build/
+node_modules/
