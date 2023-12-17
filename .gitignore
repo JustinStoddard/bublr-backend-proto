@@ -3,6 +3,7 @@
 !.gitignore
 !.circleci/
 !.github
+!.env.example
 
 build/
 node_modules/
