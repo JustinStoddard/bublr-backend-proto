@@ -114,8 +114,8 @@ export class BubblesTable {
       });
   };
 
-  delete = (id: string) => {
-    this.bubblesRepository
+  delete = async (id: string) => {
+    return await this.bubblesRepository
       .createQueryBuilder('bubbles')
       .update(BubbleEntity)
       .set({
@@ -124,6 +124,10 @@ export class BubblesTable {
       })
       .where('id = :id', { id })
       .returning('*')
-      .execute();
+      .execute()
+      .then(res => {
+        const meta = this.db.getMetadata(BubbleEntity);
+        return mapEntity(meta.columns, res.raw[0]);
+      });
   };
 };

@@ -17,6 +17,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/chai": "^4.3.11",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/koa": "^2.13.12",
@@ -24,6 +25,7 @@
     "@types/koa-router": "^7.4.8",
     "@types/mocha": "^10.0.6",
     "@types/node-uuid": "^0.0.32",
+    "bcrypt": "^5.1.1",
     "chai": "^4.3.10",
     "jsonwebtoken": "^9.0.2",
     "koa": "^2.14.2",

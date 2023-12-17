@@ -12,7 +12,8 @@ export class Users1702786956646 implements MigrationInterface {
         handle text not null,
         email text not null,
         password text not null,
-        account_type text not null
+        account_type text not null,
+        strikes integer not null default 0
       )
       `
     );

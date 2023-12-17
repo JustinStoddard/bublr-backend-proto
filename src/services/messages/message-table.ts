@@ -121,8 +121,8 @@ export class MessagesTable {
       });
   };
 
-  delete = (id: string) => {
-    this.messagesRepository
+  delete = async (id: string) => {
+    return await this.messagesRepository
       .createQueryBuilder('messages')
       .update(MessageEntity)
       .set({
@@ -131,6 +131,10 @@ export class MessagesTable {
       })
       .where('id = :id', { id })
       .returning('*')
-      .execute();
+      .execute()
+      .then(res => {
+        const meta = this.db.getMetadata(MessageEntity);
+        return mapEntity(meta.columns, res.raw[0]);
+      });
   };
 };

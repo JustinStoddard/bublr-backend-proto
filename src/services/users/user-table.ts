@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, MoreThan, MoreThanOrEqual, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
 import { AccountType, User, UserInput, UserPage, UserPatch, UsersFilter } from "./user-types";
 
@@ -32,6 +32,9 @@ export class UserEntity extends BaseEntity {
 
   @Column()
   accountType: AccountType;
+
+  @Column()
+  strikes: number;
 };
 
 const mapEntity = (columns: ColumnMetadata[], obj: object): User => {
@@ -59,6 +62,11 @@ export class UsersTable {
 
     if (filter?.accountType) {
       query = query.where('users.account_type = :accountType');
+    }
+    if (filter?.strikes) {
+      query = query.where({
+        strikes: MoreThanOrEqual(3),
+      });
     }
 
     return query.setParameters(filter);
@@ -114,8 +122,8 @@ export class UsersTable {
       });
   };
 
-  delete = (id: string) => {
-    this.usersRepository
+  delete = async (id: string) => {
+    return await this.usersRepository
       .createQueryBuilder('bubbles')
       .update(UserEntity)
       .set({
@@ -124,6 +132,10 @@ export class UsersTable {
       })
       .where('id = :id', { id })
       .returning('*')
-      .execute();
+      .execute()
+      .then(res => {
+        const meta = this.db.getMetadata(UserEntity);
+        return mapEntity(meta.columns, res.raw[0]);
+      });
   };
 };

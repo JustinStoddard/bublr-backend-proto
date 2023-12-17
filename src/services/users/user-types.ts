@@ -14,6 +14,7 @@ export type User = {
   email: string;
   password: string;
   accountType: AccountType;
+  strikes: number;
 };
 
 export type UserInput = {
@@ -29,10 +30,12 @@ export type UserPatch = {
   displayName?: string;
   handle?: string;
   accountType?: AccountType;
+  strikes?: number;
 };
 
 export type UsersFilter = {
   accountType: AccountType;
+  strikes?: boolean;
   offset?: number;
   limit?: number;
   includeTotal?: boolean;
