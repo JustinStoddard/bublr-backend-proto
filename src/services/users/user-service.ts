@@ -127,7 +127,7 @@ export class UserService {
 
     if (!user) this.throwNotFoundError({ email: input.email });
 
-    const passwordMatch = await bcrypt.compare(user.password, input.password);
+    const passwordMatch = await bcrypt.compare(input.password, user.password);
 
     if (!passwordMatch) this.throwPasswordIncorrectError({});
 
@@ -168,7 +168,7 @@ export class UserService {
     return user;
   };
 
-  delete = async (id: string) => {
+  delete = async (id: string): Promise<User> => {
     this.assertArgumentUuid('id', id);
 
     let user: User = await this.users.get(id);
@@ -178,5 +178,7 @@ export class UserService {
     user = await this.users.delete(id);
 
     this.log.info({ message: `deleted user: ${user.id}` });
+
+    return user;
   };
 };
