@@ -12,7 +12,7 @@ export const BubblesController = (bubbleService: BubbleService): IMiddleware => 
     const input = ctx.request.body as BubbleInput;
     const authContext = ctx.state.auth;
     const bubble = await bubbleService.create(input);
-    console.log("look here", bubble);
+    console.log("look here", bubble, authContext);
 
     //TODO: bubble isn't null here but insomnia shows a 404 error. Need to figure that out.
     ctx.body = bubble;

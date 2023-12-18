@@ -28,6 +28,6 @@ const verifyToken = (ctx: Koa.Context) => {
 export const AuthMiddleware = (): IMiddleware => {
   return async (ctx, next) => {
     ctx.state.auth = verifyToken(ctx);
-    next();
+    await next();
   };
 };
