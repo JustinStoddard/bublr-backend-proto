@@ -3,7 +3,7 @@ import bodyParser from "koa-bodyparser";
 import { UserService } from "../../services/users/user-service";
 import { UserInput } from "../../services/users/user-types";
 
-export const UsersController = (userService: UserService): IMiddleware => {
+export const UserSessionsController = (userService: UserService): IMiddleware => {
 
   const router = new Router();
   router.use(bodyParser());

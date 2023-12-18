@@ -11,7 +11,7 @@ export const MessagesController = (messageService: MessageService): IMiddleware 
   router.post('/api/bubbles', async ctx => {
     const input = ctx.request.body as MessageInput;
     const authContext = ctx.state.auth;
-    const message = messageService.create(input);
+    const message = await messageService.create(input);
     ctx.body = message;
     ctx.status = 201;
   });

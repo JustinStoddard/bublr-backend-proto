@@ -16,12 +16,11 @@ import { startWebServer } from "./web/webserver";
 
 require('source-map-support').install();
 
-const setup = () => {
-  const log = LogFactory.getLogger[LogCategory.system];
+const setup = async () => {
+  const log = LogFactory.getLogger(LogCategory.system);
 
   //Setup DataSources
   const url = new URL(get('POSTGRES_URL'));
-  console.log("look here", url.toString());
   const bublrDataSource = new DataSource({
     url: url.toString(),
     type: "postgres",
@@ -40,16 +39,10 @@ const setup = () => {
     namingStrategy: new SnakeNamingStrategy(),
   });
 
-  bublrDataSource.initialize().then(async () => {
-    log.info({ message: `Connecting to database...` });
+  await bublrDataSource.initialize().then(async () => {
+    log.info({ message: `Connected to database` });
   }).catch(error => {
-    throw new AppError({
-      code: ErrorCodes.ERR_INTERNAL,
-      issue: Issues.DATABASE_FAILED_TO_START,
-      meta: {
-        error,
-      },
-    });
+    log.error({ message: `Failed to connect to database`, error });
   });
 
   //Setup Tables
@@ -75,7 +68,7 @@ const setup = () => {
   );
 
   const port = parseInt(get('PORT'));
-  startWebServer(port, {
+  await startWebServer(port, {
     bubbleService,
     messageService,
     userService,

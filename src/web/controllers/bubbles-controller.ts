@@ -11,7 +11,8 @@ export const BubblesController = (bubbleService: BubbleService): IMiddleware => 
   router.post('/api/bubbles', async ctx => {
     const input = ctx.request.body as BubbleInput;
     const authContext = ctx.state.auth;
-    const bubble = bubbleService.create(input);
+    const bubble = await bubbleService.create(input);
+    console.log("look here", bubble);
     ctx.body = bubble;
     ctx.status = 201;
   });

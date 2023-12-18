@@ -23,17 +23,33 @@ RUN npm install --production
 
 ##Production image
 FROM node:18-alpine3.18 as production
-RUN npm update -g
 WORKDIR /app
 
-RUN apk --update --no-cache upgrade && npm uninstall npm -g
+RUN ls -lah
+RUN apk upgrade --no-cache
 
-COPY package*.json ./
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/build/ ./
+COPY *.json ./
+RUN npm ci
+
+COPY src src
+RUN npm run build
+
+RUN chown -R 64357:64357 /app
+RUN mkdir /.npm && chown -R 64357:64357 "/.npm"
+
+COPY --from=build /app/package*.json /app/
+COPY --from=build /app/build /app/build/
+COPY --from=build /app/node_modules /app/node_modules
 
 ENV SERVICE_NAME=bublr-backend-proto
 
+RUN ls -lah
+RUN apk upgrade --no-cache
+
 USER 64357:64357
-EXPOSE 8085
-CMD node --trace-warnings -r ./src/tracing/init-tracing.js ./src/index.js
+
+EXPOSE 8080
+
+# this is using ts-node, no currently 3pl-approval for that
+# likely we should change this as we do not want the raw source in here anyway
+CMD node --trace-warnings build/index.js

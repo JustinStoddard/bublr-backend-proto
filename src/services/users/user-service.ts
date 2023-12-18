@@ -7,7 +7,6 @@ import { LogCategory, LogFactory } from "../../common/logging/logger";
 import { UsersTable } from "./user-table";
 import { User, UserInput, UserLoginInput, UserPage, UserPatch, UsersFilter } from './user-types';
 
-
 export class UserService {
   public log = LogFactory.getLogger(LogCategory.request);
 
@@ -90,7 +89,7 @@ export class UserService {
 
   private createJwt = (user: User): string => {
     const secret = get('BUBLR_JWT_SECRET');
-    const token = jwt.sign(user, secret, { expiresIn: '4h' });
+    const token = jwt.sign({ ...user }, secret, { expiresIn: '4h' });
     return token;
   };
 
@@ -112,6 +111,8 @@ export class UserService {
     this.log.info({ message: `registered user: ${user.id}` });
 
     const token = this.createJwt(user);
+
+    //TODO: Should not be returning the password or the email of the user back to them.
 
     return { user, token };
   };

@@ -21,17 +21,16 @@ services:
     build:
       context: .
       target: production
-    hostname: bublr-backend-proto.api
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
+      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/bublr_proto?sslmode=disable
       BUBLR_JWT_SECRET: IkeaTower801
       PORT: 8080
       LOG_LEVEL: 1
     ports:
-      - 8080:80
+      - 8080:8080
 
   tests:
     build:
@@ -43,7 +42,7 @@ services:
       - postgres
       - bublr-backend-proto
     environment:
-      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
+      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/bublr_proto?sslmode=disable
       BUBLR_JWT_SECRET: IkeaTower801
       PORT: 8080
       LOG_LEVEL: 1

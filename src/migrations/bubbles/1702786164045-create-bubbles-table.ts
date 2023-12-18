@@ -10,9 +10,9 @@ export class Bubbles1702786164045 implements MigrationInterface {
         deleted_at timestamptz,
         owner_id text not null,
         name text not null,
-        longitude integer not null,
-        latitude integer not null,
-        radius integer not null
+        longitude float not null,
+        latitude float not null,
+        radius float not null
       )
       `
     );

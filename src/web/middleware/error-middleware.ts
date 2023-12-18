@@ -37,8 +37,7 @@ export const ErrorMiddleware = (): IMiddleware => {
   return async (ctx, next) => {
     try {
       await next();
-    }
-    catch (err) {
+    } catch (err) {
       console.log("Got an error invoking handler: " + err.message)
       const [ status, args ] = mapError(err);
       ctx.status = status;
