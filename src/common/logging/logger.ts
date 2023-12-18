@@ -1,4 +1,6 @@
+import { env } from 'process';
 import util from 'util';
+import { get } from '../utils/env';
 
 export enum LogCategory {
   system,
@@ -7,10 +9,10 @@ export enum LogCategory {
 };
 
 export enum Levels {
-  error,
-  warn,
-  info,
   debug,
+  info,
+  warn,
+  error,
 };
 
 export type ILogDetails = {
@@ -32,7 +34,7 @@ export interface ILogger {
 
 export class LogFactory {
   private static loggers: Map<string, ILogger> = new Map<string, ILogger>();
-  public static LOG_LEVEL = Levels.debug;
+  public static LOG_LEVEL = parseInt(get('LOG_LEVEL'));
 
   public static getLogger(category:LogCategory): ILogger{
     if (!LogFactory.loggers[category]) {
@@ -72,6 +74,7 @@ export class Logger implements ILogger{
   private output(details: ILogDetails, outputLevel: Levels) {
     if (outputLevel <= this.level) {
       details.category = LogCategory[this.category];
+      details.level = outputLevel;
       // eslint-disable-next-line no-console
       console.log(util.format("%j", details));
     }

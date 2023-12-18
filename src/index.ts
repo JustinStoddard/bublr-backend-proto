@@ -1,4 +1,5 @@
 import { DataSource } from "typeorm";
+import dotenv from 'dotenv';
 import { LogCategory, LogFactory } from "./common/logging/logger";
 import { get } from "./common/utils/env";
 import { BubbleEntity, BubblesTable } from "./services/bubbles/bubble-table";
@@ -15,6 +16,7 @@ import { UserService } from "./services/users/user-service";
 import { startWebServer } from "./web/webserver";
 
 require('source-map-support').install();
+dotenv.config();
 
 const setup = () => {
   const log = LogFactory.getLogger[LogCategory.system];
