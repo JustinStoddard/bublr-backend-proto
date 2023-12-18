@@ -74,7 +74,6 @@ export class Logger implements ILogger{
   private output(details: ILogDetails, outputLevel: Levels) {
     if (outputLevel <= this.level) {
       details.category = LogCategory[this.category];
-      details.level = outputLevel;
       // eslint-disable-next-line no-console
       console.log(util.format("%j", details));
     }

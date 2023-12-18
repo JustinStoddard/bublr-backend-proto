@@ -1,5 +1,4 @@
 import { DataSource } from "typeorm";
-import dotenv from 'dotenv';
 import { LogCategory, LogFactory } from "./common/logging/logger";
 import { get } from "./common/utils/env";
 import { BubbleEntity, BubblesTable } from "./services/bubbles/bubble-table";
@@ -16,13 +15,13 @@ import { UserService } from "./services/users/user-service";
 import { startWebServer } from "./web/webserver";
 
 require('source-map-support').install();
-dotenv.config();
 
 const setup = () => {
   const log = LogFactory.getLogger[LogCategory.system];
 
   //Setup DataSources
   const url = new URL(get('POSTGRES_URL'));
+  console.log("look here", url.toString());
   const bublrDataSource = new DataSource({
     url: url.toString(),
     type: "postgres",
@@ -44,7 +43,6 @@ const setup = () => {
   bublrDataSource.initialize().then(async () => {
     log.info({ message: `Connecting to database...` });
   }).catch(error => {
-    log.error({ message: `Failed to connect to database`, error: error });
     throw new AppError({
       code: ErrorCodes.ERR_INTERNAL,
       issue: Issues.DATABASE_FAILED_TO_START,

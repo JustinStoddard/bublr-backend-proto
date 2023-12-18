@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 export class ConfigurationError extends Error {
   constructor(key: string, issue: string) {
     super(`${key}: ${issue}`);

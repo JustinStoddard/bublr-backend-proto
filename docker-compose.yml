@@ -1,0 +1,50 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:13.6-alpine3.15
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d/
+    hostname: postgres
+    healthcheck:
+      test: pg_isready
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_period: 10s
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+
+  bublr-backend-proto:
+    build:
+      context: .
+      target: production
+    hostname: bublr-backend-proto.api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
+      BUBLR_JWT_SECRET: IkeaTower801
+      PORT: 8080
+      LOG_LEVEL: 1
+    ports:
+      - 8080:80
+
+  tests:
+    build:
+      context: .
+      target: test
+    volumes:
+      - ./src:/app/src/
+    links:
+      - postgres
+      - bublr-backend-proto
+    environment:
+      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
+      BUBLR_JWT_SECRET: IkeaTower801
+      PORT: 8080
+      LOG_LEVEL: 1
+    
