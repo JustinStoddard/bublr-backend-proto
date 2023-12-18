@@ -101,6 +101,10 @@ describe("bubble-service", () => {
 
     expect(bubblePage.total).to.be.greaterThanOrEqual(3);
     expect(bubblePage.rows.length).to.equal(bubblePage.total);
+    bubblePage.rows.map(bubble => {
+      expect(bubble.ownerId).to.equal(ownerId);
+      return;
+    });
   });
 
   it('Patches bubble', async () => {

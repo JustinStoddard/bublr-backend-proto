@@ -65,7 +65,7 @@ export class MessagesTable {
       query = query.where('messages.owner_id = :ownerId');
     }
     if (filter?.parentBubbleId) {
-      query = query.where('messages.parent_bubbles_id = :parentBubbleId');
+      query = query.where('messages.parent_bubble_id = :parentBubbleId');
     }
 
     return query.setParameters(filter);

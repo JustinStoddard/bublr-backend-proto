@@ -98,7 +98,7 @@ export class MessageService {
     return message;
   };
 
-  delete = async (id: string) => {
+  delete = async (id: string): Promise<Message> => {
     this.assertArgumentUuid('id', id);
 
     let message: Message = await this.messages.get(id);
@@ -108,5 +108,7 @@ export class MessageService {
     message = await this.messages.delete(id);
 
     this.log.info({ message: `deleted message: ${message.id}` });
+
+    return message;
   };
 };
