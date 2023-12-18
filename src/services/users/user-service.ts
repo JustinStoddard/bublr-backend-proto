@@ -128,6 +128,7 @@ export class UserService {
     if (!user) this.throwNotFoundError({ email: input.email });
 
     const passwordMatch = await bcrypt.compare(user.password, input.password);
+
     if (!passwordMatch) this.throwPasswordIncorrectError({});
 
     this.log.info({ message: `logged in user: ${user.id}` });

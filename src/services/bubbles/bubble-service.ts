@@ -99,7 +99,7 @@ export class BubbleService {
     return bubble;
   };
 
-  delete = async (id: string) => {
+  delete = async (id: string): Promise<Bubble> => {
     this.assertArgumentUuid('id', id);
 
     let bubble: Bubble = await this.bubbles.get(id);
@@ -109,5 +109,7 @@ export class BubbleService {
     bubble = await this.bubbles.delete(id);
 
     this.log.info({ message: `deleted bubble: ${bubble.id}` });
+
+    return bubble;
   };
 };

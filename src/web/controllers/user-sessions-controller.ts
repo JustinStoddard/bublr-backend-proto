@@ -1,7 +1,7 @@
 import Router, { IMiddleware } from "koa-router";
 import bodyParser from "koa-bodyparser";
 import { UserService } from "../../services/users/user-service";
-import { UserInput } from "../../services/users/user-types";
+import { UserInput, UserLoginInput } from "../../services/users/user-types";
 
 export const UserSessionsController = (userService: UserService): IMiddleware => {
 
@@ -14,6 +14,13 @@ export const UserSessionsController = (userService: UserService): IMiddleware =>
     const user = await userService.register(input);
     ctx.body = user;
     ctx.status = 201;
+  });
+
+  router.get('/api/login', async ctx => {
+    const input = ctx.request.body as UserLoginInput;
+    const user = await userService.login(input);
+    ctx.body = user;
+    ctx.status = 200;
   });
 
   return router.routes();

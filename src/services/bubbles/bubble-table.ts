@@ -24,14 +24,14 @@ export class BubbleEntity extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
-  longitude: string;
+  @Column({ type: 'double precision' })
+  longitude: number;
 
-  @Column()
-  latitude: string;
+  @Column({ type: 'double precision' })
+  latitude: number;
 
-  @Column()
-  radius: string;
+  @Column({ type: 'double precision' })
+  radius: number;
 };
 
 const mapEntity = (columns: ColumnMetadata[], obj: object): Bubble => {

@@ -4,7 +4,7 @@
   "description": "Bublrs prototype backend",
   "main": "index.js",
   "scripts": {
-    "test": "coverage mocha --timeout 10s -r ts-node/register --recursive 'src/**/*.test.ts'",
+    "test": "mocha --timeout 10s -r ts-node/register --recursive 'src/**/*.test.ts'",
     "build": "tsc",
     "start": "npm run build && node build/index.js"
   },
