@@ -26,14 +26,14 @@ const setup = () => {
     type: "postgres",
     migrationsRun: true,
     entities: [
+      UserEntity,
       BubbleEntity,
       MessageEntity,
-      UserEntity,
     ],
     migrations: [
+      ...UserMigrations,
       ...BubbleMigrations,
       ...MessageMigrations,
-      ...UserMigrations,
     ],
     migrationsTableName: "bublr_migrations",
     namingStrategy: new SnakeNamingStrategy(),

@@ -88,7 +88,7 @@ export class UserService {
     this.assertArgumentUuid('id', patch.id);
   };
 
-  createJwt = (user: User): string => {
+  private createJwt = (user: User): string => {
     const secret = get('BUBLR_JWT_SECRET');
     const token = jwt.sign(user, secret, { expiresIn: '4h' });
     return token;
