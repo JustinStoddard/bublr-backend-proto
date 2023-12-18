@@ -88,7 +88,13 @@ export class UserService {
     this.assertArgumentUuid('id', patch.id);
   };
 
-  register = async (input: UserInput): Promise<User> => {
+  createJwt = (user: User): string => {
+    const secret = get('BUBLR_JWT_SECRET');
+    const token = jwt.sign(user, secret, { expiresIn: '4h' });
+    return token;
+  };
+
+  register = async (input: UserInput): Promise<{ user: User, token: string }> => {
     this.assertUserInput(input);
 
     const filter: UsersFilter = {
@@ -105,10 +111,12 @@ export class UserService {
 
     this.log.info({ message: `registered user: ${user.id}` });
 
-    return user;
+    const token = this.createJwt(user);
+
+    return { user, token };
   };
 
-  login = async (input: UserLoginInput): Promise<string> => {
+  login = async (input: UserLoginInput): Promise<{ user: User, token: string }> => {
     this.assertUserLoginInput(input);
 
     const filter: UsersFilter = {
@@ -120,11 +128,12 @@ export class UserService {
 
     const passwordMatch = await bcrypt.compare(user.password, input.password);
     if (!passwordMatch) this.throwPasswordIncorrectError({});
-    
-    const secret = get('BUBLR_JWT_SECRET');
-    const token = jwt.sign({ email: user.email, handle: user.handle }, secret, { expiresIn: '4h' });
 
-    return token;
+    this.log.info({ message: `logged in user: ${user.id}` });
+    
+    const token = this.createJwt(user);
+
+    return { user, token };
   };
 
   get = async (id: string): Promise<User> => {
