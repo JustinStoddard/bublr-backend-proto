@@ -13,8 +13,17 @@ export const BubblesController = (bubbleService: BubbleService): IMiddleware => 
     const authContext = ctx.state.auth;
     const bubble = await bubbleService.create(input);
     console.log("look here", bubble);
+
+    //TODO: bubble isn't null here but insomnia shows a 404 error. Need to figure that out.
     ctx.body = bubble;
     ctx.status = 201;
+  });
+
+  router.get("/api/bubbles/:id", async ctx => {
+    const bubble = await bubbleService.get(ctx.params.id);
+    ctx.body = bubble;
+    ctx.type = 'application/json';
+    ctx.status = 200;
   });
 
   return router.routes();

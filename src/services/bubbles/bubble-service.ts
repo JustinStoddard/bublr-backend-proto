@@ -82,7 +82,7 @@ export class BubbleService {
   };
 
   find = async (filter: BubblesFilter): Promise<BubblePage> => {
-    return this.bubbles.find(filter);
+    return await this.bubbles.find(filter);
   };
 
   patch = async (patch: BubblePatch): Promise<Bubble> => {
