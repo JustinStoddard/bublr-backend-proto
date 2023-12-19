@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, MoreThan, MoreThanOrEqual, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, MoreThan, MoreThanOrEqual, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
 import { AccountType, User, UserInput, UserPage, UserPatch, UsersFilter } from "./user-types";
 
@@ -93,6 +93,7 @@ export class UsersTable {
     return await this.usersRepository.find({
       where: {
         id,
+        deletedAt: null,
       }
     }).then(res => res[0]);
   };
@@ -126,7 +127,7 @@ export class UsersTable {
       .createQueryBuilder('users')
       .update(UserEntity)
       .set(patch)
-      .where('id = :id', { id: patch.id })
+      .where('id = :id and deleted_at is null', { id: patch.id })
       .returning('*')
       .execute()
       .then(async res => {
@@ -143,7 +144,7 @@ export class UsersTable {
         updatedAt: () => 'now()',
         deletedAt: () => 'now()',
       })
-      .where('id = :id', { id })
+      .where('id = :id and deleted_at is null', { id })
       .returning('*')
       .execute()
       .then(res => {

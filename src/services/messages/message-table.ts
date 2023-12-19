@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
 import { Message, MessageInput, MessagePage, MessagePatch, MessagesFilter } from "./message-types";
 
@@ -77,6 +77,7 @@ export class MessagesTable {
     return await this.messagesRepository.find({
       where: {
         id,
+        deletedAt: IsNull(),
       }
     }).then(res => res[0]);
   };
@@ -106,7 +107,7 @@ export class MessagesTable {
       .createQueryBuilder('messages')
       .update(MessageEntity)
       .set(patch)
-      .where('id = :id', { id: patch.id })
+      .where('id = :id and deleted_at is null', { id: patch.id })
       .returning('*')
       .execute()
       .then(async res => {
@@ -123,7 +124,7 @@ export class MessagesTable {
         updatedAt: () => 'now()',
         deletedAt: () => 'now()',
       })
-      .where('id = :id', { id })
+      .where('id = :id and deleted_at is null', { id })
       .returning('*')
       .execute()
       .then(res => {

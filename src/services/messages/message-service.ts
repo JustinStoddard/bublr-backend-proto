@@ -70,60 +70,80 @@ export class MessageService {
   };
 
   create = async (ctx: AuthContext, input: MessageInput): Promise<Message> => {
+    //Validate input
     this.assertBubbleInput(input);
 
+    //Ensure bubble exists
     await this.bubbles.get(ctx, input.bubbleId);
 
+    //Create message
     const message: Message = await this.messages.create(input);
 
+    //Log that user created a message
     this.log.info({ message: `user: ${ctx.id} created a message: ${message.id}` });
 
     return message;
   };
 
   get = async (ctx: AuthContext, id: string): Promise<Message> => {
+    //Validate id
     this.assertArgumentUuid('id', id);
 
+    //Fetch message
     const message: Message = await this.messages.get(id);
 
+    //Throw not found error if message doesn't exist
     if (!message) this.throwNotFoundError({ id, resource: "message" });
 
+    //Log that user fetched a message
     this.log.info({ message: `user: ${ctx.id} fetched message: ${message.id}` });
 
     return message;
   };
 
   find = async (ctx: AuthContext, filter: MessagesFilter): Promise<MessagePage> => {
+    //Fetch message page
     const messagePage = await this.messages.find(filter);
 
+    //Log that user fetched messages
     this.log.info({ message: `user: ${ctx.id} fetched ${messagePage.rows.length} messages` });
 
     return messagePage;
   };
 
   patch = async (ctx: AuthContext, patch: MessagePatch): Promise<Message> => {
+    //Validate patch
     this.assertBubblePatch(patch);
 
+    //Fetch message
     let message: Message = await this.messages.get(patch.id);
 
+    //Throw not found error if message doesn't exist
     if (!message) this.throwNotFoundError({ id: patch.id, resource: "message" });
 
+    //Patch message
     message = await this.messages.patch(patch);
 
+    //Log if user patched a message
     this.log.info({ message: `user: ${ctx.id} patched message: ${message.id}` });
 
     return message;
   };
 
   delete = async (ctx: AuthContext, id: string): Promise<Message> => {
+    //Validate id
     this.assertArgumentUuid('id', id);
 
+    //Fetch message
     let message: Message = await this.messages.get(id);
 
+    //Throw not found error if message doesn't exist
     if (!message) this.throwNotFoundError({ id, resource: "message" });
 
+    //Delete message
     message = await this.messages.delete(id);
 
+    //Log that user deleted a message
     this.log.info({ message: `user: ${ctx.id} deleted message: ${message.id}` });
 
     return message;

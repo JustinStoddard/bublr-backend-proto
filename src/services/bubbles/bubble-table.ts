@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
 import { Bubble, BubbleInput, BubblePage, BubblePatch, BubblesFilter } from "./bubble-types";
 
@@ -76,6 +76,7 @@ export class BubblesTable {
     return await this.bubblesRepository.find({
       where: {
         id,
+        deletedAt: null,
       }
     }).then(res => res[0]);
   };
@@ -105,7 +106,7 @@ export class BubblesTable {
       .createQueryBuilder('bubbles')
       .update(BubbleEntity)
       .set(patch)
-      .where('id = :id', { id: patch.id })
+      .where('id = :id and deleted_at is null', { id: patch.id })
       .returning('*')
       .execute()
       .then(async res => {
@@ -122,7 +123,7 @@ export class BubblesTable {
         updatedAt: () => 'now()',
         deletedAt: () => 'now()',
       })
-      .where('id = :id', { id })
+      .where('id = :id and deleted_at is null', { id })
       .returning('*')
       .execute()
       .then(res => {
