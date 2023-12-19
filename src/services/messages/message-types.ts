@@ -26,8 +26,8 @@ export type MessagePatch = {
 };
 
 export type MessagesFilter = {
-  ownerId: string;
-  parentBubbleId: string;
+  ownerId?: string;
+  parentBubbleId?: string;
   offset?: number;
   limit?: number;
   includeTotal?: boolean;

@@ -75,7 +75,7 @@ export class BubbleService {
 
     const bubble: Bubble = await this.bubbles.create(input);
 
-    this.log.info({ message: `created a bubble: ${bubble.id}` });
+    this.log.info({ message: `user: ${ctx.id} created a bubble: ${bubble.id}` });
 
     return bubble;
   };
@@ -88,7 +88,7 @@ export class BubbleService {
     if (!bubble) this.throwNotFoundError({ id });
     if (bubble.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble" });
 
-    this.log.info({ message: `fetched bubble: ${bubble.id}` });
+    this.log.info({ message: `user: ${ctx.id} fetched bubble: ${bubble.id}` });
 
     return bubble;
   };
@@ -96,7 +96,11 @@ export class BubbleService {
   find = async (ctx: AuthContext, filter: BubblesFilter): Promise<BubblePage> => {
     if (!filter?.ownerId) filter.ownerId = ctx.id;
     if (filter.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble-page" });
-    return await this.bubbles.find(filter);
+    const bubblePage = await this.bubbles.find(filter);
+
+    this.log.info({ message: `user: ${ctx.id} fetched ${bubblePage.rows.length} bubbles` });
+
+    return bubblePage;
   };
 
   patch = async (ctx: AuthContext, patch: BubblePatch): Promise<Bubble> => {
@@ -109,7 +113,7 @@ export class BubbleService {
 
     bubble = await this.bubbles.patch(patch);
 
-    this.log.info({ message: `patched bubble: ${bubble.id}` });
+    this.log.info({ message: `user: ${ctx.id} patched bubble: ${bubble.id}` });
 
     return bubble;
   };
@@ -124,7 +128,7 @@ export class BubbleService {
 
     bubble = await this.bubbles.delete(id);
 
-    this.log.info({ message: `deleted bubble: ${bubble.id}` });
+    this.log.info({ message: `user: ${ctx.id} deleted bubble: ${bubble.id}` });
 
     return bubble;
   };

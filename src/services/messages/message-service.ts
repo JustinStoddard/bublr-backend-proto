@@ -3,7 +3,7 @@ import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 import { LogCategory, LogFactory } from "../../common/logging/logger";
 import { MessagesTable } from "./message-table";
 import { Message, MessageInput, MessagePage, MessagePatch, MessagesFilter } from './message-types';
-
+import { AuthContext } from '../../common/auth/auth-context';
 
 export class MessageService {
   public log = LogFactory.getLogger(LogCategory.request);
@@ -16,6 +16,16 @@ export class MessageService {
     throw new AppError({
       code: ErrorCodes.ERR_NOT_FOUND,
       issue: Issues.MESSAGE_NOT_FOUND,
+      meta: {
+        ...args,
+      }
+    });
+  };
+
+  throwForbiddenError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_FORBIDDEN,
+      issue: Issues.RESOURCE_NOT_AVAILABLE,
       meta: {
         ...args,
       }
@@ -58,33 +68,37 @@ export class MessageService {
     this.assertArgumentUuid('id', patch.id);
   };
 
-  create = async (input: MessageInput): Promise<Message> => {
+  create = async (ctx: AuthContext, input: MessageInput): Promise<Message> => {
     this.assertBubbleInput(input);
 
     const message: Message = await this.messages.create(input);
 
-    this.log.info({ message: `created a message: ${message.id}` });
+    this.log.info({ message: `user: ${ctx.id} created a message: ${message.id}` });
 
     return message;
   };
 
-  get = async (id: string): Promise<Message> => {
+  get = async (ctx: AuthContext, id: string): Promise<Message> => {
     this.assertArgumentUuid('id', id);
 
     const message: Message = await this.messages.get(id);
 
     if (!message) this.throwNotFoundError({ id });
 
-    this.log.info({ message: `fetched message: ${message.id}` });
+    this.log.info({ message: `user: ${ctx.id} fetched message: ${message.id}` });
 
     return message;
   };
 
-  find = async (filter: MessagesFilter): Promise<MessagePage> => {
-    return this.messages.find(filter);
+  find = async (ctx: AuthContext, filter: MessagesFilter): Promise<MessagePage> => {
+    const messagePage = await this.messages.find(filter);
+
+    this.log.info({ message: `user: ${ctx.id} fetched ${messagePage.rows.length} messages` });
+
+    return messagePage;
   };
 
-  patch = async (patch: MessagePatch): Promise<Message> => {
+  patch = async (ctx: AuthContext, patch: MessagePatch): Promise<Message> => {
     this.assertBubblePatch(patch);
 
     let message: Message = await this.messages.get(patch.id);
@@ -93,12 +107,12 @@ export class MessageService {
 
     message = await this.messages.patch(patch);
 
-    this.log.info({ message: `patched message: ${message.id}` });
+    this.log.info({ message: `user: ${ctx.id} patched message: ${message.id}` });
 
     return message;
   };
 
-  delete = async (id: string): Promise<Message> => {
+  delete = async (ctx: AuthContext, id: string): Promise<Message> => {
     this.assertArgumentUuid('id', id);
 
     let message: Message = await this.messages.get(id);
@@ -107,7 +121,7 @@ export class MessageService {
 
     message = await this.messages.delete(id);
 
-    this.log.info({ message: `deleted message: ${message.id}` });
+    this.log.info({ message: `user: ${ctx.id} deleted message: ${message.id}` });
 
     return message;
   };
