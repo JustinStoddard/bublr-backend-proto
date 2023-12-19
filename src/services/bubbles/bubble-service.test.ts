@@ -7,10 +7,24 @@ import { get } from "../../common/utils/env";
 import { BubbleInput, BubblePatch, BubblesFilter } from "./bubble-types";
 import { anyId } from "../../common/utils/testutils";
 import { expect } from "chai";
+import { AuthContext } from "../../common/auth/auth-context";
 
 describe("bubble-service", () => {
   let bubbleService: BubbleService;
   let bubbleDataSource: DataSource;
+  let authContext: AuthContext = {
+    id: anyId(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deletedAt: null,
+    displayName: "Jahstin",
+    handle: "@stoic",
+    email: "test@gmail.com",
+    accountType: "premium",
+    strikes: 0,
+    iat: 4523452345234,
+    exp: 1234123412343,
+  };
 
   before(async () => {
     const url = new URL(get('POSTGRES_URL'));
@@ -37,18 +51,17 @@ describe("bubble-service", () => {
   });
 
   it('Creates a bubble', async () => {
-    const ownerId = anyId();
     const input: BubbleInput = {
-      ownerId,
+      ownerId: authContext.id,
       name: "test name",
       longitude: -100.43242342,
       latitude: 44.23452345,
       radius: 5.5,
     };
 
-    const bubble = await bubbleService.create(input);
+    const bubble = await bubbleService.create(authContext, input);
 
-    expect(bubble.ownerId).to.equal(ownerId);
+    expect(bubble.ownerId).to.equal(input.ownerId);
     expect(bubble.name).to.equal(input.name);
     expect(bubble.longitude).to.equal(input.longitude);
     expect(bubble.latitude).to.equal(input.latitude);
@@ -56,19 +69,18 @@ describe("bubble-service", () => {
   });
 
   it('Fetches a bubble', async () => {
-    const ownerId = anyId();
     const input: BubbleInput = {
-      ownerId,
+      ownerId: authContext.id,
       name: "test name",
       longitude: -100.43242342,
       latitude: 44.23452345,
       radius: 5.5,
     };
 
-    const bubble = await bubbleService.create(input);
-    expect(bubble.ownerId).to.equal(ownerId);
+    const bubble = await bubbleService.create(authContext, input);
+    expect(bubble.ownerId).to.equal(input.ownerId);
 
-    const fetchedBubble = await bubbleService.get(bubble.id);
+    const fetchedBubble = await bubbleService.get(authContext, bubble.id);
 
     expect(fetchedBubble.id).to.equal(bubble.id);
     expect(fetchedBubble.ownerId).to.equal(bubble.ownerId);
@@ -79,9 +91,8 @@ describe("bubble-service", () => {
   });
 
   it('Fetches a page of bubbles', async () => {
-    const ownerId = anyId();
     const input: BubbleInput = {
-      ownerId,
+      ownerId: authContext.id,
       name: "test name",
       longitude: -100.43242342,
       latitude: 44.23452345,
@@ -89,36 +100,35 @@ describe("bubble-service", () => {
     };
 
     //Create 3 bubbles
-    await bubbleService.create(input);
-    await bubbleService.create(input);
-    await bubbleService.create(input);
+    await bubbleService.create(authContext, input);
+    await bubbleService.create(authContext, input);
+    await bubbleService.create(authContext, input);
 
     const filter: BubblesFilter = {
-      ownerId,
+      ownerId: authContext.id,
       includeTotal: true,
     };
-    const bubblePage = await bubbleService.find(filter);
+    const bubblePage = await bubbleService.find(authContext, filter);
 
     expect(bubblePage.total).to.be.greaterThanOrEqual(3);
     expect(bubblePage.rows.length).to.equal(bubblePage.total);
     bubblePage.rows.map(bubble => {
-      expect(bubble.ownerId).to.equal(ownerId);
+      expect(bubble.ownerId).to.equal(input.ownerId);
       return;
     });
   });
 
   it('Patches bubble', async () => {
-    const ownerId = anyId();
     const input: BubbleInput = {
-      ownerId,
+      ownerId: authContext.id,
       name: "test name",
       longitude: -100.43242342,
       latitude: 44.23452345,
       radius: 5.5,
     };
 
-    const bubble = await bubbleService.create(input);
-    expect(bubble.ownerId).to.equal(ownerId);
+    const bubble = await bubbleService.create(authContext, input);
+    expect(bubble.ownerId).to.equal(input.ownerId);
 
     const updatedName = "updated-name";
     const updatedLongitude = -111.23452345;
@@ -131,9 +141,9 @@ describe("bubble-service", () => {
       latitude: updatedLatitude,
       radius,
     };
-    const patchedBubble = await bubbleService.patch(patch);
+    const patchedBubble = await bubbleService.patch(authContext, patch);
 
-    expect(patchedBubble.ownerId).to.equal(ownerId);
+    expect(patchedBubble.ownerId).to.equal(input.ownerId);
     expect(patchedBubble.name).to.equal(updatedName);
     expect(patchedBubble.longitude).to.equal(updatedLongitude);
     expect(patchedBubble.latitude).to.equal(updatedLatitude);
@@ -141,19 +151,18 @@ describe("bubble-service", () => {
   });
 
   it('Deletes bubble', async () => {
-    const ownerId = anyId();
     const input: BubbleInput = {
-      ownerId,
+      ownerId: authContext.id,
       name: "test name",
       longitude: -100.43242342,
       latitude: 44.23452345,
       radius: 5.5,
     };
 
-    const bubble = await bubbleService.create(input);
-    expect(bubble.ownerId).to.equal(ownerId);
+    const bubble = await bubbleService.create(authContext, input);
+    expect(bubble.ownerId).to.equal(input.ownerId);
 
-    const deletedBubble = await bubbleService.delete(bubble.id);
+    const deletedBubble = await bubbleService.delete(authContext, bubble.id);
     expect(deletedBubble.id).to.equal(bubble.id);
     expect(deletedBubble.deletedAt).to.not.be.null;
   });

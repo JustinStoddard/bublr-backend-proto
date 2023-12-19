@@ -31,4 +31,5 @@ export enum Issues {
   PASSWORD_INCORRECT = 'password-incorrect',
   DATABASE_FAILED_TO_START = 'failed-to-connect-to-database',
   INTERNAL_SERVER_ERROR = 'internal-server-error',
+  RESOURCE_NOT_AVAILABLE = 'resource-not-available',
 };

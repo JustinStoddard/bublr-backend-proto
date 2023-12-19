@@ -8,7 +8,6 @@ import BubbleMigrations from "./migrations/bubbles/Bubbles";
 import MessageMigrations from "./migrations/messages/Messages";
 import UserMigrations from "./migrations/users/Users";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
-import { AppError, ErrorCodes, Issues } from "./common/errors/app-error";
 import { BubbleService } from "./services/bubbles/bubble-service";
 import { MessageService } from "./services/messages/message-service";
 import { UserService } from "./services/users/user-service";

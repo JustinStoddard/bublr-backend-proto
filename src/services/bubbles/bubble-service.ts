@@ -3,6 +3,7 @@ import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 import { BubblesTable } from "./bubble-table";
 import { Bubble, BubbleInput, BubblePage, BubblePatch, BubblesFilter } from "./bubble-types";
 import { LogCategory, LogFactory } from '../../common/logging/logger';
+import { AuthContext } from '../../common/auth/auth-context';
 
 export class BubbleService {
   public log = LogFactory.getLogger(LogCategory.request);
@@ -15,6 +16,16 @@ export class BubbleService {
     throw new AppError({
       code: ErrorCodes.ERR_NOT_FOUND,
       issue: Issues.BUBBLE_NOT_FOUND,
+      meta: {
+        ...args,
+      }
+    });
+  };
+
+  throwForbiddenError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_FORBIDDEN,
+      issue: Issues.RESOURCE_NOT_AVAILABLE,
       meta: {
         ...args,
       }
@@ -59,7 +70,7 @@ export class BubbleService {
     this.assertArgumentUuid('id', patch.id);
   };
 
-  create = async (input: BubbleInput): Promise<Bubble> => {
+  create = async (ctx: AuthContext, input: BubbleInput): Promise<Bubble> => {
     this.assertBubbleInput(input);
 
     const bubble: Bubble = await this.bubbles.create(input);
@@ -69,28 +80,32 @@ export class BubbleService {
     return bubble;
   };
 
-  get = async (id: string): Promise<Bubble> => {
+  get = async (ctx: AuthContext, id: string): Promise<Bubble> => {
     this.assertArgumentUuid('id', id);
 
     const bubble: Bubble = await this.bubbles.get(id);
 
     if (!bubble) this.throwNotFoundError({ id });
+    if (bubble.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble" });
 
     this.log.info({ message: `fetched bubble: ${bubble.id}` });
 
     return bubble;
   };
 
-  find = async (filter: BubblesFilter): Promise<BubblePage> => {
+  find = async (ctx: AuthContext, filter: BubblesFilter): Promise<BubblePage> => {
+    if (!filter?.ownerId) filter.ownerId = ctx.id;
+    if (filter.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble-page" });
     return await this.bubbles.find(filter);
   };
 
-  patch = async (patch: BubblePatch): Promise<Bubble> => {
+  patch = async (ctx: AuthContext, patch: BubblePatch): Promise<Bubble> => {
     this.assertBubblePatch(patch);
 
     let bubble: Bubble = await this.bubbles.get(patch.id);
 
     if (!bubble) this.throwNotFoundError({ id: patch.id });
+    if (bubble.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble" });
 
     bubble = await this.bubbles.patch(patch);
 
@@ -99,12 +114,13 @@ export class BubbleService {
     return bubble;
   };
 
-  delete = async (id: string): Promise<Bubble> => {
+  delete = async (ctx: AuthContext, id: string): Promise<Bubble> => {
     this.assertArgumentUuid('id', id);
 
     let bubble: Bubble = await this.bubbles.get(id);
 
     if (!bubble) this.throwNotFoundError({ id });
+    if (bubble.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble" });
 
     bubble = await this.bubbles.delete(id);
 

@@ -112,8 +112,6 @@ export class UserService {
 
     const token = this.createJwt(user);
 
-    //TODO: Should not be returning the password or the email of the user back to them.
-
     return { user, token };
   };
 
