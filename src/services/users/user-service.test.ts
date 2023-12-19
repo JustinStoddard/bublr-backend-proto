@@ -86,33 +86,26 @@ describe("user-service", () => {
   });
 
   it('Fetches a page of users', async () => {
-    const inputs: UserInput[] = [
-      {
-        displayName: "Jahstin",
-        handle: anyAlphaNumeric(),
-        email: anyAlphaNumeric(),
-        password: "stoic",
-        accountType: AccountType.Premium,
-      },
-      {
-        displayName: "Jahstin",
-        handle: anyAlphaNumeric(),
-        email: anyAlphaNumeric(),
-        password: "stoic",
-        accountType: AccountType.Premium,
-      },
-      {
-        displayName: "Jahstin",
-        handle: anyAlphaNumeric(),
-        email: anyAlphaNumeric(),
-        password: "stoic",
-        accountType: AccountType.Premium,
-      }
-    ];
-
-    await inputs.map(async input => {
-      await userService.register(input);
-      return;
+    await userService.register({
+      displayName: "Jahstin",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
+      password: "stoic",
+      accountType: AccountType.Premium,
+    });
+    await userService.register({
+      displayName: "Jahstin",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
+      password: "stoic",
+      accountType: AccountType.Premium,
+    });
+    await userService.register({
+      displayName: "Jahstin",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
+      password: "stoic",
+      accountType: AccountType.Premium,
     });
 
     const filter: UsersFilter = {
