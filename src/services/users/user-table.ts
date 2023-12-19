@@ -93,7 +93,7 @@ export class UsersTable {
     return await this.usersRepository.find({
       where: {
         id,
-        deletedAt: null,
+        deletedAt: IsNull(),
       }
     }).then(res => res[0]);
   };

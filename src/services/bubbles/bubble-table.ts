@@ -76,7 +76,7 @@ export class BubblesTable {
     return await this.bubblesRepository.find({
       where: {
         id,
-        deletedAt: null,
+        deletedAt: IsNull(),
       }
     }).then(res => res[0]);
   };
