@@ -20,10 +20,7 @@ export class MessageEntity extends BaseEntity {
   deletedAt: string | null;
 
   @Column()
-  ownerId: string;
-
-  @Column()
-  parentBubbleId: string;
+  bubbleId: string;
 
   @Column()
   content: string;
@@ -61,11 +58,8 @@ export class MessagesTable {
   filterQuery = (filter: MessagesFilter) => {
     let query = this.messagesRepository.createQueryBuilder("messages");
 
-    if (filter?.ownerId) {
-      query = query.where('messages.owner_id = :ownerId');
-    }
-    if (filter?.parentBubbleId) {
-      query = query.where('messages.parent_bubble_id = :parentBubbleId');
+    if (filter?.bubbleId) {
+      query = query.where('messages.bubble_id = :bubbleId');
     }
 
     return query.setParameters(filter);

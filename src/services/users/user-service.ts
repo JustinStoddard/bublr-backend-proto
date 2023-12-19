@@ -105,97 +105,137 @@ export class UserService {
   };
 
   register = async (input: UserInput): Promise<{ user: User, token: string }> => {
+    //Validate input
     this.assertUserInput(input);
 
+    //Create filter
     const filter: UsersFilter = {
       handle: input.handle,
       email: input.email,
     };
+
+    //Attempt to fetch user with unique email
     const existingUser: User = await this.users.findOne(filter);
 
+    //Throw user already exist error if user exists
     if (existingUser) this.throwUserAlreadyExistsError({});
 
+    //Encrypt password passed from input
     const hashedPassword = await bcrypt.hash(input.password, 10);
+
+    //Override password field on input so encrypted password is whats stored in database
     input.password = hashedPassword;
+
+    //Create user
     const user: User = await this.users.create(input);
 
+    //Log that a user was registered
     this.log.info({ message: `registered user: ${user.id}` });
 
+    //Create JWT
     const token = this.createJwt(user);
 
     return { user, token };
   };
 
   login = async (input: UserLoginInput): Promise<{ user: User, token: string }> => {
+    //Validate input
     this.assertUserLoginInput(input);
 
+    //Create filter
     const filter: UsersFilter = {
       email: input.email,
     };
+
+    //Attempt to fetch user with email
     const user: User = await this.users.findOne(filter);
 
+    //Throw not found error if user wasn't found
     if (!user) this.throwNotFoundError({ email: input.email });
 
+    //Check if the password passed in input matched the password saved in database
     const passwordMatch = await bcrypt.compare(input.password, user.password);
 
+    //Throw password incorrect error if passwords dont match
     if (!passwordMatch) this.throwPasswordIncorrectError({});
 
+    //Log that a user logged in
     this.log.info({ message: `logged in user: ${user.id}` });
     
+    //Create JWT
     const token = this.createJwt(user);
 
     return { user, token };
   };
 
   get = async (ctx: AuthContext, id: string): Promise<User> => {
+    //Validate id
     this.assertArgumentUuid('id', id);
 
+    //Throw forbidden error if user ids don't match
     if (id !== ctx.id) this.throwForbiddenError({ resource: "user" });
 
+    //Fetch iser
     let user: User = await this.users.get(id);
 
+    //Throw not found error if user didn't exist
     if (!user) this.throwNotFoundError({ id });
 
+    //Log that a user fetched a user
     this.log.info({ message: `user: ${ctx.id} fetched user: ${user.id}` });
 
     return user;
   };
 
   find = async (ctx: AuthContext, filter: UsersFilter): Promise<UserPage> => {
+    //Fetch users
     const userPage = await this.users.find(filter);
 
+    //Log that a user fetched users
     this.log.info({ message: `user: ${ctx.id} fetched ${userPage.rows.length} users` });
 
     return userPage;
   };
 
   patch = async (ctx: AuthContext, patch: UserPatch): Promise<User> => {
+    //Validate patch
     this.assertUserPatch(patch);
 
+    //Throw forbidden error if user ids don't match
     if (patch.id !== ctx.id) this.throwForbiddenError({ resource: "user" });
 
+    //Fetch user
     let user: User = await this.users.get(patch.id);
 
+    //Throw not found error if user doesn't exist
     if (!user) this.throwNotFoundError({ id: patch.id });
 
+    //Patch user
     user = await this.users.patch(patch);
 
+    //Log that a user patched a user
     this.log.info({ message: `user: ${ctx.id} patched user: ${user.id}` });
 
     return user;
   };
 
   delete = async (ctx: AuthContext, id: string): Promise<User> => {
+    //Validate id
     this.assertArgumentUuid('id', id);
 
+    //Throw forbidden error if user ids don't match
     if (id !== ctx.id) this.throwForbiddenError({ resource: "user" });
 
+    //Fetch user
     let user: User = await this.users.get(id);
 
+    //Throw not found error if user doesn't exist
     if (!user) this.throwNotFoundError({ id });
 
+    //Delete user
     user = await this.users.delete(id);
 
+    //Log user deleted a user
     this.log.info({ message: `user: ${ctx.id} deleted user: ${user.id}` });
 
     return user;

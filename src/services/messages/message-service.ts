@@ -4,12 +4,14 @@ import { LogCategory, LogFactory } from "../../common/logging/logger";
 import { MessagesTable } from "./message-table";
 import { Message, MessageInput, MessagePage, MessagePatch, MessagesFilter } from './message-types';
 import { AuthContext } from '../../common/auth/auth-context';
+import { BubbleService } from '../bubbles/bubble-service';
 
 export class MessageService {
   public log = LogFactory.getLogger(LogCategory.request);
 
   constructor(
     private messages: MessagesTable,
+    private bubbles: BubbleService,
   ) {};
 
   throwNotFoundError = (args: any) => {
@@ -59,8 +61,7 @@ export class MessageService {
   };
 
   assertBubbleInput = (input: MessageInput) => {
-    this.assertRequiredArgument('ownerId', input.ownerId);
-    this.assertRequiredArgument('parentBubbleId', input.parentBubbleId);
+    this.assertRequiredArgument('parentBubbleId', input.bubbleId);
     this.assertRequiredArgument('content', input.content);
   };
 
@@ -70,6 +71,8 @@ export class MessageService {
 
   create = async (ctx: AuthContext, input: MessageInput): Promise<Message> => {
     this.assertBubbleInput(input);
+
+    await this.bubbles.get(ctx, input.bubbleId);
 
     const message: Message = await this.messages.create(input);
 

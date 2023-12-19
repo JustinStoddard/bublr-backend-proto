@@ -3,8 +3,7 @@ export type Message = {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
-  ownerId: string;
-  parentBubbleId: string;
+  bubbleId: string;
   content: string;
   likes: number;
   dislikes: number;
@@ -12,8 +11,7 @@ export type Message = {
 };
 
 export type MessageInput = {
-  ownerId: string;
-  parentBubbleId: string;
+  bubbleId: string;
   content: string;
 };
 
@@ -26,8 +24,7 @@ export type MessagePatch = {
 };
 
 export type MessagesFilter = {
-  ownerId?: string;
-  parentBubbleId?: string;
+  bubbleId?: string;
   offset?: number;
   limit?: number;
   includeTotal?: boolean;

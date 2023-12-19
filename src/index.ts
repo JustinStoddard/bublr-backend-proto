@@ -45,13 +45,13 @@ const setup = async () => {
   });
 
   //Setup Tables
+  const usersTable = new UsersTable(
+    bublrDataSource,
+  );
   const bubblesTable = new BubblesTable(
     bublrDataSource,
   );
   const messagesTable = new MessagesTable(
-    bublrDataSource,
-  );
-  const usersTable = new UsersTable(
     bublrDataSource,
   );
 
@@ -65,6 +65,7 @@ const setup = async () => {
   );
   const messageService = new MessageService(
     messagesTable,
+    bubbleService,
   );
 
   const port = parseInt(get('PORT'));
