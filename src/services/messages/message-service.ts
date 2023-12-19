@@ -83,7 +83,7 @@ export class MessageService {
 
     const message: Message = await this.messages.get(id);
 
-    if (!message) this.throwNotFoundError({ id });
+    if (!message) this.throwNotFoundError({ id, resource: "message" });
 
     this.log.info({ message: `user: ${ctx.id} fetched message: ${message.id}` });
 
@@ -103,7 +103,7 @@ export class MessageService {
 
     let message: Message = await this.messages.get(patch.id);
 
-    if (!message) this.throwNotFoundError({ id: patch.id });
+    if (!message) this.throwNotFoundError({ id: patch.id, resource: "message" });
 
     message = await this.messages.patch(patch);
 
@@ -117,7 +117,7 @@ export class MessageService {
 
     let message: Message = await this.messages.get(id);
 
-    if (!message) this.throwNotFoundError({ id });
+    if (!message) this.throwNotFoundError({ id, resource: "message" });
 
     message = await this.messages.delete(id);
 

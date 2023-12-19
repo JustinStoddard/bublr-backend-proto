@@ -5,26 +5,18 @@ import BubbleMigrations from "../../migrations/bubbles/Bubbles";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { get } from "../../common/utils/env";
 import { BubbleInput, BubblePatch, BubblesFilter } from "./bubble-types";
-import { anyId } from "../../common/utils/testutils";
+import { anyAlphaNumeric, anyId } from "../../common/utils/testutils";
 import { expect } from "chai";
 import { AuthContext } from "../../common/auth/auth-context";
+import { UserEntity, UsersTable } from "../users/user-table";
+import UserMigrations from "../../migrations/users/Users";
+import { UserService } from "../users/user-service";
+import { AccountType, UserInput } from "../users/user-types";
 
 describe("bubble-service", () => {
   let bubbleService: BubbleService;
   let bubbleDataSource: DataSource;
-  let authContext: AuthContext = {
-    id: anyId(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    deletedAt: null,
-    displayName: "Jahstin",
-    handle: "@stoic",
-    email: "test@gmail.com",
-    accountType: "premium",
-    strikes: 0,
-    iat: 4523452345234,
-    exp: 1234123412343,
-  };
+  let authContext: AuthContext;
 
   before(async () => {
     const url = new URL(get('POSTGRES_URL'));
@@ -32,8 +24,8 @@ describe("bubble-service", () => {
       url: url.toString(),
       type: "postgres",
       migrationsRun: true,
-      entities: [BubbleEntity],
-      migrations: [...BubbleMigrations],
+      entities: [BubbleEntity, UserEntity],
+      migrations: [...BubbleMigrations, ...UserMigrations],
       migrationsTableName: "bublr_migrations",
       namingStrategy: new SnakeNamingStrategy(),
     });
@@ -42,12 +34,34 @@ describe("bubble-service", () => {
       .then(() => console.log("Connected to database"))
       .catch(error => console.error(error));
 
+    const userTable = new UsersTable(
+      bubbleDataSource,
+    );
+    const userService = new UserService(
+      userTable,
+    );
+
     const bubbleTable = new BubblesTable(
       bubbleDataSource,
     );
     bubbleService = new BubbleService(
       bubbleTable,
+      userService,
     );
+
+    const userInput: UserInput = {
+      displayName: "Jahstin",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
+      password: anyAlphaNumeric(),
+      accountType: AccountType.Premium,
+    };
+    const user = await userService.register(userInput);
+    authContext = {
+      ...user.user,
+      iat: 234523452345,
+      exp: 324523452345,
+    };
   });
 
   it('Creates a bubble', async () => {

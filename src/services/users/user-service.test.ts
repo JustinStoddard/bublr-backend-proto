@@ -6,13 +6,14 @@ import UserMigrations from "../../migrations/users/Users";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { AccountType, UserInput, UserLoginInput, UserPatch, UsersFilter } from "./user-types";
 import { expect } from "chai";
-import { anyAlphaNumeric } from "../../common/utils/testutils";
+import { anyAlphaNumeric, anyId } from "../../common/utils/testutils";
+import { AuthContext } from "../../common/auth/auth-context";
 
 describe("user-service", () => {
   let userService: UserService;
   let userDataSource: DataSource;
-  const handle = anyAlphaNumeric();
-  const email = anyAlphaNumeric(); 
+  let authContext: AuthContext;
+  let password: string = anyAlphaNumeric();
 
   before(async () => {
     const url = new URL(get('POSTGRES_URL'));
@@ -41,13 +42,19 @@ describe("user-service", () => {
   it('Registers a user', async () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
-      handle,
-      email,
-      password: "stoic",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
+      password,
       accountType: AccountType.Premium,
     };
 
     const user = await userService.register(userInput);
+
+    authContext = {
+      ...user.user,
+      iat: 234523452345,
+      exp: 234523452345
+    };
 
     expect(user.user.displayName).to.equal(userInput.displayName);
     expect(user.user.handle).to.equal(userInput.handle);
@@ -56,10 +63,10 @@ describe("user-service", () => {
     expect(user.token).to.not.be.null;
   });
 
-  it('Logs in a user', async () => {
+  it('Login a user', async () => {
     const userLoginInput: UserLoginInput = {
-      email,
-      password: "stoic",
+      email: authContext.email,
+      password,
     };
 
     const user = await userService.login(userLoginInput);
@@ -69,15 +76,24 @@ describe("user-service", () => {
   });
 
   it('Fetches a user', async () => {
-    const userLoginInput: UserLoginInput = {
-      email,
+    const userInput: UserInput = {
+      displayName: "Jahstin",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
       password: "stoic",
+      accountType: AccountType.Premium,
     };
 
-    const user = await userService.login(userLoginInput);
-    expect(user.user.email).to.equal(userLoginInput.email);
+    const user = await userService.register(userInput);
+    expect(user.user.email).to.equal(userInput.email);
 
-    const fetchedUser = await userService.get(user.user.id);
+    authContext = {
+      ...user.user,
+      iat: 234523452345,
+      exp: 234523452345
+    };
+
+    const fetchedUser = await userService.get(authContext, user.user.id);
     expect(fetchedUser.id).to.equal(user.user.id);
     expect(fetchedUser.displayName).to.equal(user.user.displayName);
     expect(fetchedUser.handle).to.equal(user.user.handle);
@@ -86,35 +102,13 @@ describe("user-service", () => {
   });
 
   it('Fetches a page of users', async () => {
-    await userService.register({
-      displayName: "Jahstin",
-      handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
-      accountType: AccountType.Premium,
-    });
-    await userService.register({
-      displayName: "Jahstin",
-      handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
-      accountType: AccountType.Premium,
-    });
-    await userService.register({
-      displayName: "Jahstin",
-      handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
-      accountType: AccountType.Premium,
-    });
-
     const filter: UsersFilter = {
       accountType: AccountType.Premium,
       includeTotal: true,
     };
 
-    const userPage = await userService.find(filter);
-    expect(userPage.total).to.be.greaterThanOrEqual(3);
+    const userPage = await userService.find(authContext, filter);
+    expect(userPage.total).to.be.greaterThanOrEqual(1);
     expect(userPage.rows.length).to.equal(userPage.total);
     userPage.rows.map(user => {
       expect(user.accountType).to.equal(AccountType.Premium);
@@ -122,40 +116,18 @@ describe("user-service", () => {
   });
 
   it('Patches a user', async () => {
-    const userInput: UserInput = {
-      displayName: "Jahstin",
-      handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
-      accountType: AccountType.Premium,
-    };
-
-    const user = await userService.register(userInput);
-    expect(user.user.email).to.equal(userInput.email);
-
     const patch: UserPatch = {
-      id: user.user.id,
+      id: authContext.id,
       displayName: "patched display name",
     };
-    const patchedUser = await userService.patch(patch);
+    const patchedUser = await userService.patch(authContext, patch);
     expect(patchedUser.id).to.equal(patch.id);
     expect(patchedUser.displayName).to.equal(patch.displayName);
   });
 
   it('Deletes a user', async () => {
-    const userInput: UserInput = {
-      displayName: "Jahstin",
-      handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
-      accountType: AccountType.Premium,
-    };
-
-    const user = await userService.register(userInput);
-    expect(user.user.email).to.equal(userInput.email);
-
-    const deletedUser = await userService.delete(user.user.id);
-    expect(deletedUser.id).to.equal(user.user.id);
+    const deletedUser = await userService.delete(authContext, authContext.id);
+    expect(deletedUser.id).to.equal(authContext.id);
     expect(deletedUser.deletedAt).to.not.be.null;
   });
 });

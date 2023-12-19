@@ -4,12 +4,14 @@ import { BubblesTable } from "./bubble-table";
 import { Bubble, BubbleInput, BubblePage, BubblePatch, BubblesFilter } from "./bubble-types";
 import { LogCategory, LogFactory } from '../../common/logging/logger';
 import { AuthContext } from '../../common/auth/auth-context';
+import { UserService } from '../users/user-service';
 
 export class BubbleService {
-  public log = LogFactory.getLogger(LogCategory.request);
+  private log = LogFactory.getLogger(LogCategory.request);
 
   constructor(
     private bubbles: BubblesTable,
+    private users: UserService,
   ) {};
 
   throwNotFoundError = (args: any) => {
@@ -71,63 +73,95 @@ export class BubbleService {
   };
 
   create = async (ctx: AuthContext, input: BubbleInput): Promise<Bubble> => {
+    //Validate input
     this.assertBubbleInput(input);
 
+    //Make sure the user exists
+    await this.users.get(ctx, input.ownerId);
+
+    //Create bubble
     const bubble: Bubble = await this.bubbles.create(input);
 
+    //Log that the user created a bubble
     this.log.info({ message: `user: ${ctx.id} created a bubble: ${bubble.id}` });
 
     return bubble;
   };
 
   get = async (ctx: AuthContext, id: string): Promise<Bubble> => {
+    //Validate id
     this.assertArgumentUuid('id', id);
 
+    //Fetch bubble
     const bubble: Bubble = await this.bubbles.get(id);
 
-    if (!bubble) this.throwNotFoundError({ id });
+    //Throw not found err if bubble wasn't found
+    if (!bubble) this.throwNotFoundError({ id, resource: "bubble" });
+
+    //Throw forbidden error if owner ids don't match
     if (bubble.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble" });
 
+    //Log that user fetched a bubble
     this.log.info({ message: `user: ${ctx.id} fetched bubble: ${bubble.id}` });
 
     return bubble;
   };
 
   find = async (ctx: AuthContext, filter: BubblesFilter): Promise<BubblePage> => {
+    //Always include the ownerId in the filter even if user doesn't pass it in.
     if (!filter?.ownerId) filter.ownerId = ctx.id;
+
+    //Throw forbidden error if owner ids don't match
     if (filter.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble-page" });
+
+    //Find bubble
     const bubblePage = await this.bubbles.find(filter);
 
+    //Log that user fetched bubbles
     this.log.info({ message: `user: ${ctx.id} fetched ${bubblePage.rows.length} bubbles` });
 
     return bubblePage;
   };
 
   patch = async (ctx: AuthContext, patch: BubblePatch): Promise<Bubble> => {
+    //Validate patch
     this.assertBubblePatch(patch);
 
+    //Fetch bubble
     let bubble: Bubble = await this.bubbles.get(patch.id);
 
-    if (!bubble) this.throwNotFoundError({ id: patch.id });
+    //Throw not found error if bubble doesn't exist
+    if (!bubble) this.throwNotFoundError({ id: patch.id, resource: "bubble" });
+
+    //Throw forbidden error if owner ids don't match
     if (bubble.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble" });
 
+    //Patch bubble
     bubble = await this.bubbles.patch(patch);
 
+    //Log that user patched a bubble
     this.log.info({ message: `user: ${ctx.id} patched bubble: ${bubble.id}` });
 
     return bubble;
   };
 
   delete = async (ctx: AuthContext, id: string): Promise<Bubble> => {
+    //Validate id
     this.assertArgumentUuid('id', id);
 
+    //Fetch bubble
     let bubble: Bubble = await this.bubbles.get(id);
 
-    if (!bubble) this.throwNotFoundError({ id });
+    //Throw not found error if bubble doesn't exist
+    if (!bubble) this.throwNotFoundError({ id, resource: "bubble" });
+
+    //Throw forbidden error if owner ids don't match
     if (bubble.ownerId !== ctx.id) this.throwForbiddenError({ resource: "bubble" });
 
+    //Delete bubble
     bubble = await this.bubbles.delete(id);
 
+    //Log that user deleted a bubble
     this.log.info({ message: `user: ${ctx.id} deleted bubble: ${bubble.id}` });
 
     return bubble;

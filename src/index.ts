@@ -56,14 +56,15 @@ const setup = async () => {
   );
 
   //Setup Services
+  const userService = new UserService(
+    usersTable,
+  );
   const bubbleService = new BubbleService(
     bubblesTable,
+    userService,
   );
   const messageService = new MessageService(
     messagesTable,
-  );
-  const userService = new UserService(
-    usersTable,
   );
 
   const port = parseInt(get('PORT'));

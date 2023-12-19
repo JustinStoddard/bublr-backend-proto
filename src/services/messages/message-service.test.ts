@@ -14,14 +14,8 @@ describe("message-service", () => {
   let messageDataSource: DataSource;
   let authContext: AuthContext = {
     id: anyId(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    deletedAt: null,
-    displayName: "Jahstin",
     handle: "@stoic",
     email: "test@gmail.com",
-    accountType: "premium",
-    strikes: 0,
     iat: 4523452345234,
     exp: 1234123412343,
   };

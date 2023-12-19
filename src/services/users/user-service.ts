@@ -6,6 +6,7 @@ import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 import { LogCategory, LogFactory } from "../../common/logging/logger";
 import { UsersTable } from "./user-table";
 import { User, UserInput, UserLoginInput, UserPage, UserPatch, UsersFilter } from './user-types';
+import { AuthContext } from '../../common/auth/auth-context';
 
 export class UserService {
   public log = LogFactory.getLogger(LogCategory.request);
@@ -18,6 +19,16 @@ export class UserService {
     throw new AppError({
       code: ErrorCodes.ERR_NOT_FOUND,
       issue: Issues.USER_NOT_FOUND,
+      meta: {
+        ...args,
+      }
+    });
+  };
+
+  throwForbiddenError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_FORBIDDEN,
+      issue: Issues.RESOURCE_NOT_AVAILABLE,
       meta: {
         ...args,
       }
@@ -136,24 +147,32 @@ export class UserService {
     return { user, token };
   };
 
-  get = async (id: string): Promise<User> => {
+  get = async (ctx: AuthContext, id: string): Promise<User> => {
     this.assertArgumentUuid('id', id);
+
+    if (id !== ctx.id) this.throwForbiddenError({ resource: "user" });
 
     let user: User = await this.users.get(id);
 
     if (!user) this.throwNotFoundError({ id });
 
-    this.log.info({ message: `fetched user: ${user.id}` });
+    this.log.info({ message: `user: ${ctx.id} fetched user: ${user.id}` });
 
     return user;
   };
 
-  find = async (filter: UsersFilter): Promise<UserPage> => {
-    return this.users.find(filter);
+  find = async (ctx: AuthContext, filter: UsersFilter): Promise<UserPage> => {
+    const userPage = await this.users.find(filter);
+
+    this.log.info({ message: `user: ${ctx.id} fetched ${userPage.rows.length} users` });
+
+    return userPage;
   };
 
-  patch = async (patch: UserPatch): Promise<User> => {
+  patch = async (ctx: AuthContext, patch: UserPatch): Promise<User> => {
     this.assertUserPatch(patch);
+
+    if (patch.id !== ctx.id) this.throwForbiddenError({ resource: "user" });
 
     let user: User = await this.users.get(patch.id);
 
@@ -161,13 +180,15 @@ export class UserService {
 
     user = await this.users.patch(patch);
 
-    this.log.info({ message: `patched user: ${user.id}` });
+    this.log.info({ message: `user: ${ctx.id} patched user: ${user.id}` });
 
     return user;
   };
 
-  delete = async (id: string): Promise<User> => {
+  delete = async (ctx: AuthContext, id: string): Promise<User> => {
     this.assertArgumentUuid('id', id);
+
+    if (id !== ctx.id) this.throwForbiddenError({ resource: "user" });
 
     let user: User = await this.users.get(id);
 
@@ -175,7 +196,7 @@ export class UserService {
 
     user = await this.users.delete(id);
 
-    this.log.info({ message: `deleted user: ${user.id}` });
+    this.log.info({ message: `user: ${ctx.id} deleted user: ${user.id}` });
 
     return user;
   };
