@@ -1,6 +1,8 @@
-import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, ManyToMany, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
 import { Message, MessageInput, MessagePage, MessagePatch, MessagesFilter } from "./message-types";
+import { UserEntity } from "../users/user-table";
+import { BubbleEntity } from "../bubbles/bubble-table";
 
 
 @Entity("messages")
@@ -19,20 +21,26 @@ export class MessageEntity extends BaseEntity {
   @Column('timestamptz')
   deletedAt: string | null;
 
-  @Column()
+  @Column({ type: 'text' })
   bubbleId: string;
 
-  @Column()
+  @Column({ type: 'text' })
+  ownerId: string;
+
+  @Column({ type: 'text' })
   content: string;
 
-  @Column({ default: 0 })
+  @Column({ type: 'int', default: 0 })
   likes: number;
 
-  @Column({ default: 0 })
+  @Column({ type: 'int', default: 0 })
   dislikes: number;
 
-  @Column({ default: 0 })
+  @Column({ type: 'int', default: 0 })
   reports: number;
+
+  @ManyToMany(() => BubbleEntity, { cascade: true })
+  bubbles: BubbleEntity[];
 };
 
 const mapEntity = (columns: ColumnMetadata[], obj: object): Message => {

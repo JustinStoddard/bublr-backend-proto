@@ -1,6 +1,7 @@
-import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, JoinTable, ManyToMany, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
 import { Bubble, BubbleInput, BubblePage, BubblePatch, BubblesFilter } from "./bubble-types";
+import { MessageEntity } from "../messages/message-table";
 
 @Entity("bubbles")
 export class BubbleEntity extends BaseEntity {
@@ -18,10 +19,10 @@ export class BubbleEntity extends BaseEntity {
   @Column('timestamptz')
   deletedAt: string | null;
 
-  @Column()
+  @Column({ type: 'text' })
   ownerId: string;
 
-  @Column()
+  @Column({ type: 'text' })
   name: string;
 
   @Column({ type: 'double precision' })
@@ -32,6 +33,14 @@ export class BubbleEntity extends BaseEntity {
 
   @Column({ type: 'double precision' })
   radius: number;
+
+  @ManyToMany(() => MessageEntity, { cascade: true })
+  @JoinTable({
+    name: 'bubbles_messages',
+    joinColumn: { name: 'bubbleId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'messageId', referencedColumnName: 'id' },
+  })
+  messages: MessageEntity[];
 };
 
 const mapEntity = (columns: ColumnMetadata[], obj: object): Bubble => {
@@ -54,6 +63,10 @@ export class BubblesTable {
     this.bubblesRepository = db.getRepository(BubbleEntity);
   };
 
+  bubblesNearParentBubble = async (id: string): Promise<Bubble[]> => {
+    return [] as Bubble[];
+  };
+
   filterQuery = (filter: BubblesFilter) => {
     let query = this.bubblesRepository.createQueryBuilder("bubbles");
 
@@ -62,6 +75,10 @@ export class BubblesTable {
     }
 
     return query.setParameters(filter);
+  };
+
+  saveBubbles = async (bubbles: Bubble[]): Promise<Bubble[]> => {
+    return await this.bubblesRepository.save(bubbles);
   };
 
   total = async (filter: BubblesFilter): Promise<number> => {
@@ -77,7 +94,8 @@ export class BubblesTable {
       where: {
         id,
         deletedAt: IsNull(),
-      }
+      },
+      relations: ['messages'],
     }).then(res => res[0]);
   };
 

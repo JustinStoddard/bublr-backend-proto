@@ -12,6 +12,7 @@ import { BubbleService } from "./services/bubbles/bubble-service";
 import { MessageService } from "./services/messages/message-service";
 import { UserService } from "./services/users/user-service";
 import { startWebServer } from "./web/webserver";
+import BubblesMessagesMigrations from "./migrations/bubbles_messages/Bubbles-Messages";
 
 require('source-map-support').install();
 
@@ -33,6 +34,7 @@ const setup = async () => {
       ...UserMigrations,
       ...BubbleMigrations,
       ...MessageMigrations,
+      ...BubblesMessagesMigrations,
     ],
     migrationsTableName: "bublr_migrations",
     namingStrategy: new SnakeNamingStrategy(),

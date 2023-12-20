@@ -9,6 +9,7 @@ export class Messages1702786695580 implements MigrationInterface {
         updated_at timestamptz not null default now(),
         deleted_at timestamptz,
         bubble_id text not null,
+        owner_id text not null,
         content text not null,
         likes integer not null default 0,
         dislikes integer not null default 0,

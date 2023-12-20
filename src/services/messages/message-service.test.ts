@@ -16,6 +16,7 @@ import UserMigrations from "../../migrations/users/Users";
 import { UserService } from "../users/user-service";
 import { AccountType, UserInput } from "../users/user-types";
 import { Bubble, BubbleInput } from "../bubbles/bubble-types";
+import BubblesMessagesMigrations from "../../migrations/bubbles_messages/Bubbles-Messages";
 
 describe("message-service", () => {
   let messageService: MessageService;
@@ -30,7 +31,7 @@ describe("message-service", () => {
       type: "postgres",
       migrationsRun: true,
       entities: [MessageEntity, BubbleEntity, UserEntity],
-      migrations: [...MessageMigrations, ...BubbleMigrations, ...UserMigrations],
+      migrations: [...MessageMigrations, ...BubbleMigrations, ...UserMigrations, ...BubblesMessagesMigrations],
       migrationsTableName: "bublr_migrations",
       namingStrategy: new SnakeNamingStrategy(),
     });
@@ -89,6 +90,7 @@ describe("message-service", () => {
   it('Creates a message', async () => {
     const input: MessageInput = {
       bubbleId: bubble.id,
+      ownerId: authContext.id,
       content: "test",
     };
 
@@ -100,6 +102,7 @@ describe("message-service", () => {
   it('Fetches a message', async () => {
     const input: MessageInput = {
       bubbleId: bubble.id,
+      ownerId: authContext.id,
       content: "test",
     };
 
@@ -115,6 +118,7 @@ describe("message-service", () => {
   it('Fetches a page of messages', async () => {
     const input: MessageInput = {
       bubbleId: bubble.id,
+      ownerId: authContext.id,
       content: "test",
     };
 
@@ -139,6 +143,7 @@ describe("message-service", () => {
   it('Patches a message', async () => {
     const input: MessageInput = {
       bubbleId: bubble.id,
+      ownerId: authContext.id,
       content: "test",
     };
 
@@ -158,6 +163,7 @@ describe("message-service", () => {
   it('Deletes a message', async () => {
     const input: MessageInput = {
       bubbleId: bubble.id,
+      ownerId: authContext.id,
       content: "test",
     };
 

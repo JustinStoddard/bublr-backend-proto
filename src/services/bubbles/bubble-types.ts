@@ -1,3 +1,4 @@
+import { Message } from "../messages/message-types";
 
 export type Bubble = {
   id: string;
@@ -9,6 +10,7 @@ export type Bubble = {
   longitude: number;
   latitude: number;
   radius: number;
+  messages: Message[];
 };
 
 export type BubbleInput = {

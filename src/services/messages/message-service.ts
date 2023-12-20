@@ -60,24 +60,23 @@ export class MessageService {
     return uuidParse(value);
   };
 
-  assertBubbleInput = (input: MessageInput) => {
+  assertMessageInput = (input: MessageInput) => {
     this.assertRequiredArgument('parentBubbleId', input.bubbleId);
     this.assertRequiredArgument('content', input.content);
   };
 
-  assertBubblePatch = (patch: MessagePatch) => {
+  assertMessagePatch = (patch: MessagePatch) => {
     this.assertArgumentUuid('id', patch.id);
   };
 
   create = async (ctx: AuthContext, input: MessageInput): Promise<Message> => {
     //Validate input
-    this.assertBubbleInput(input);
-
-    //Ensure bubble exists
-    await this.bubbles.get(ctx, input.bubbleId);
+    this.assertMessageInput(input);
 
     //Create message
     const message: Message = await this.messages.create(input);
+
+    await this.bubbles.sendMessageToBubbles(message);
 
     //Log that user created a message
     this.log.info({ message: `user: ${ctx.id} created a message: ${message.id}` });
@@ -113,7 +112,7 @@ export class MessageService {
 
   patch = async (ctx: AuthContext, patch: MessagePatch): Promise<Message> => {
     //Validate patch
-    this.assertBubblePatch(patch);
+    this.assertMessagePatch(patch);
 
     //Fetch message
     let message: Message = await this.messages.get(patch.id);

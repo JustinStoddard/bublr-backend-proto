@@ -5,6 +5,7 @@ import { Bubble, BubbleInput, BubblePage, BubblePatch, BubblesFilter } from "./b
 import { LogCategory, LogFactory } from '../../common/logging/logger';
 import { AuthContext } from '../../common/auth/auth-context';
 import { UserService } from '../users/user-service';
+import { Message } from '../messages/message-types';
 
 export class BubbleService {
   private log = LogFactory.getLogger(LogCategory.request);
@@ -70,6 +71,41 @@ export class BubbleService {
 
   assertBubblePatch = (patch: BubblePatch) => {
     this.assertArgumentUuid('id', patch.id);
+  };
+
+  fetchBubblesNearParentBubble = async (ctx: AuthContext, id: string): Promise<Bubble[]> => {
+    //Validate id
+    this.assertArgumentUuid('id', id);
+
+    //Fetch bubble
+    const bubble: Bubble = await this.bubbles.get(id);
+
+    //Throw not found err if bubble wasn't found
+    if (!bubble) this.throwNotFoundError({ id, resource: "bubble" });
+
+    const bubblesNearParentBubble = await this.bubbles.bubblesNearParentBubble(id);
+
+    //Log that the user created a bubble
+    this.log.info({ message: `user: ${ctx.id} queried for bubbles near bubble: ${id}` });
+
+    return bubblesNearParentBubble;
+  };
+
+  fetchBubblesIntersectingWithParentBubble = async (ctx: AuthContext, id: string): Promise<Bubble[]> => {
+    return [] as Bubble[];
+  };
+
+  sendMessageToBubbles = async (message: Message) => {
+    const bubbles = (await this.bubbles.find({})).rows;
+
+    bubbles.forEach(bubble => {
+      if (!bubble.messages) {
+        bubble.messages = [];
+      }
+      bubble.messages.push(message);
+    });
+
+    this.bubbles.saveBubbles(bubbles);
   };
 
   create = async (ctx: AuthContext, input: BubbleInput): Promise<Bubble> => {

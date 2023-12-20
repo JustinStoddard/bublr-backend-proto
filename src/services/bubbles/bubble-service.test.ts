@@ -12,6 +12,9 @@ import { UserEntity, UsersTable } from "../users/user-table";
 import UserMigrations from "../../migrations/users/Users";
 import { UserService } from "../users/user-service";
 import { AccountType, UserInput } from "../users/user-types";
+import { MessageEntity } from "../messages/message-table";
+import MessageMigrations from "../../migrations/messages/Messages";
+import BubblesMessagesMigrations from "../../migrations/bubbles_messages/Bubbles-Messages";
 
 describe("bubble-service", () => {
   let bubbleService: BubbleService;
@@ -24,8 +27,8 @@ describe("bubble-service", () => {
       url: url.toString(),
       type: "postgres",
       migrationsRun: true,
-      entities: [BubbleEntity, UserEntity],
-      migrations: [...BubbleMigrations, ...UserMigrations],
+      entities: [BubbleEntity, UserEntity, MessageEntity],
+      migrations: [...BubbleMigrations, ...UserMigrations, ...MessageMigrations, ...BubblesMessagesMigrations],
       migrationsTableName: "bublr_migrations",
       namingStrategy: new SnakeNamingStrategy(),
     });
