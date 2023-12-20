@@ -105,13 +105,10 @@ export class BubblesTable {
   };
 
   bubblesIntersectingWithParentBubble = async (id: string): Promise<Bubble[]> => {
-    const parentBubble = await this.bubblesRepository.findOne({
-      where: {
-        id,
-        deletedAt: IsNull(),
-      },
-      relations: ['messages'],
-    }).then(res => res[0]);
+    const parentBubble = await this.get(id);
+
+    console.log("parent bubble", parentBubble);
+
     const nearbyBubbles = await this.bubblesNearParentBubble(parentBubble);
 
     const intersectingBubbles: Bubble[] = nearbyBubbles.filter(async bubble => {
