@@ -76,7 +76,7 @@ export class MessageService {
     //Create message
     const message: Message = await this.messages.create(input);
 
-    await this.bubbles.sendMessageToBubbles(message);
+    await this.bubbles.sendMessageToBubbles(ctx, message);
 
     //Log that user created a message
     this.log.info({ message: `user: ${ctx.id} created a message: ${message.id}` });

@@ -73,30 +73,16 @@ export class BubbleService {
     this.assertArgumentUuid('id', patch.id);
   };
 
-  fetchBubblesNearParentBubble = async (ctx: AuthContext, id: string): Promise<Bubble[]> => {
-    //Validate id
-    this.assertArgumentUuid('id', id);
-
+  sendMessageToBubbles = async (ctx: AuthContext, message: Message) => {
     //Fetch bubble
-    const bubble: Bubble = await this.bubbles.get(id);
+    const bubble: Bubble = await this.bubbles.get(message.bubbleId);
 
     //Throw not found err if bubble wasn't found
-    if (!bubble) this.throwNotFoundError({ id, resource: "bubble" });
+    if (!bubble) this.throwNotFoundError({ id: message.bubbleId, resource: "bubble" });
 
-    const bubblesNearParentBubble = await this.bubbles.bubblesNearParentBubble(id);
+    const bubbles = await this.bubbles.bubblesIntersectingWithParentBubble(message.bubbleId);
 
-    //Log that the user created a bubble
-    this.log.info({ message: `user: ${ctx.id} queried for bubbles near bubble: ${id}` });
-
-    return bubblesNearParentBubble;
-  };
-
-  fetchBubblesIntersectingWithParentBubble = async (ctx: AuthContext, id: string): Promise<Bubble[]> => {
-    return [] as Bubble[];
-  };
-
-  sendMessageToBubbles = async (message: Message) => {
-    const bubbles = (await this.bubbles.find({})).rows;
+    console.log("look here 2", bubbles);
 
     bubbles.forEach(bubble => {
       if (!bubble.messages) {
@@ -104,6 +90,9 @@ export class BubbleService {
       }
       bubble.messages.push(message);
     });
+
+    //Log that the user sent a message to bubbles
+    this.log.info({ message: `user: ${ctx.id} queried for bubbles intersecting with bubble: ${bubble.id}` });
 
     this.bubbles.saveBubbles(bubbles);
   };

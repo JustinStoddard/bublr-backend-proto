@@ -63,8 +63,68 @@ export class BubblesTable {
     this.bubblesRepository = db.getRepository(BubbleEntity);
   };
 
-  bubblesNearParentBubble = async (id: string): Promise<Bubble[]> => {
-    return [] as Bubble[];
+  private calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const earthRadiusKm = 6371; // Earth's radius in kilometers
+  
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLon = this.toRadians(lon2 - lon1);
+  
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = earthRadiusKm * c;
+  
+    return distance;
+  }
+  
+  private toRadians = (degrees: number): number => {
+    return degrees * (Math.PI / 180);
+  }
+
+  bubblesNearParentBubble = async (parentBubble: Bubble): Promise<Bubble[]> => {
+    const radiusMiles = 25;
+    const radiusKilometers = radiusMiles * 1.60934;
+
+    const nearbyBubbles = await this.bubblesRepository
+      .createQueryBuilder("bubbles")
+      .where(
+        `(6371 * acos(cos(radians(:parentLat)) * cos(radians(bubbles.latitude)) * cos(radians(bubbles.longitude) - radians(:parentLong)) + sin(radians(:parentLat)) * sin(radians(bubbles.latitude)))) <= :radius`,
+        {
+          parentLat: parentBubble.latitude,
+          parentLong: parentBubble.longitude,
+          radius: radiusKilometers,
+        }
+      )
+      .getMany();
+
+    return nearbyBubbles as Bubble[];
+  };
+
+  bubblesIntersectingWithParentBubble = async (id: string): Promise<Bubble[]> => {
+    const parentBubble = await this.bubblesRepository.find({
+      where: {
+        id,
+      },
+    }).then(res => res[0]);
+    const nearbyBubbles = await this.bubblesNearParentBubble(parentBubble);
+
+    const intersectingBubbles = nearbyBubbles.filter(bubble => {
+      const distanceBetweenCenters = this.calculateDistance(
+        parentBubble.latitude,
+        parentBubble.longitude,
+        bubble.latitude,
+        bubble.longitude
+      );
+
+      const sumOfRadii = 10 + bubble.radius; // 10 miles for parent bubble, bubble.radius for nearby bubbles
+
+      // Check if the circles intersect based on their distances and radii
+      return distanceBetweenCenters <= sumOfRadii;
+    });
+
+    return intersectingBubbles as Bubble[];
   };
 
   filterQuery = (filter: BubblesFilter) => {
@@ -90,13 +150,17 @@ export class BubblesTable {
   };
 
   get = async (id: string): Promise<Bubble> => {
-    return await this.bubblesRepository.find({
+    const bubble =  await this.bubblesRepository.find({
       where: {
         id,
         deletedAt: IsNull(),
       },
       relations: ['messages'],
     }).then(res => res[0]);
+
+    bubble.messages = bubble.messages.filter(message => message.deletedAt === null);
+
+    return bubble;
   };
 
   find = async (filter: BubblesFilter): Promise<BubblePage> => {
