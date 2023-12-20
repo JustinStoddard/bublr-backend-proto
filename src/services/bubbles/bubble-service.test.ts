@@ -12,13 +12,15 @@ import { UserEntity, UsersTable } from "../users/user-table";
 import UserMigrations from "../../migrations/users/Users";
 import { UserService } from "../users/user-service";
 import { AccountType, UserInput } from "../users/user-types";
-import { MessageEntity } from "../messages/message-table";
+import { MessageEntity, MessagesTable } from "../messages/message-table";
 import MessageMigrations from "../../migrations/messages/Messages";
 import BubblesMessagesMigrations from "../../migrations/bubbles_messages/Bubbles-Messages";
+import { MessageService } from "../messages/message-service";
+import { MessageInput } from "../messages/message-types";
 
 describe("bubble-service", () => {
   let bubbleService: BubbleService;
-  let bubbleTable: BubblesTable;
+  let messageService: MessageService;
   let bubbleDataSource: DataSource;
   let authContext: AuthContext;
 
@@ -45,12 +47,20 @@ describe("bubble-service", () => {
       userTable,
     );
 
-    bubbleTable = new BubblesTable(
+    const bubbleTable = new BubblesTable(
       bubbleDataSource,
     );
     bubbleService = new BubbleService(
       bubbleTable,
       userService,
+    );
+
+    const messageTable = new MessagesTable(
+      bubbleDataSource,
+    );
+    messageService = new MessageService(
+      messageTable,
+      bubbleService,
     );
 
     const userInput: UserInput = {
@@ -185,47 +195,62 @@ describe("bubble-service", () => {
     expect(deletedBubble.deletedAt).to.not.be.null;
   });
 
-  // it.only('Returns intersecting bubbles', async () => {
-  //   //Create bubbles
+  it('Sends messages to parent and intersecting bubbles', async () => {
+    //Create bubbles
 
-  //   //Parent bubble
-  //   const parentBubble = await bubbleService.create(authContext, {
-  //     ownerId: authContext.id,
-  //     name: "Parent bubble",
-  //     longitude: -111.93937357479808,
-  //     latitude: 40.607595375102306,
-  //     radius: 5,
-  //   });
+    //Parent bubble
+    const parentBubble = await bubbleService.create(authContext, {
+      ownerId: authContext.id,
+      name: "Parent bubble",
+      longitude: -111.93937357479808,
+      latitude: 40.607595375102306,
+      radius: 5,
+    });
 
-  //   //Bubble near and intersecting with parent bubble
-  //   await bubbleService.create(authContext, {
-  //     ownerId: authContext.id,
-  //     name: "Bubble near and intersecting with parent bubble",
-  //     longitude: -111.99470091302237,
-  //     latitude: 40.606273182314425,
-  //     radius: 4,
-  //   });
+    //Bubble near and intersecting with parent bubble
+    const bubbleNearAndIntersecting = await bubbleService.create(authContext, {
+      ownerId: authContext.id,
+      name: "Bubble near and intersecting with parent bubble",
+      longitude: -111.99470091302237,
+      latitude: 40.606273182314425,
+      radius: 4,
+    });
 
-  //   //Bubble near but not intersecting with parent bubble
-  //   await bubbleService.create(authContext, {
-  //     ownerId: authContext.id,
-  //     name: "Bubble near but not intersecting with parent bubble",
-  //     longitude: -112.08590781215449,
-  //     latitude: 40.60135133931723,
-  //     radius: 1,
-  //   });
+    //Bubble near but not intersecting with parent bubble
+    await bubbleService.create(authContext, {
+      ownerId: authContext.id,
+      name: "Bubble near but not intersecting with parent bubble",
+      longitude: -112.08590781215449,
+      latitude: 40.60135133931723,
+      radius: 1,
+    });
 
-  //   //Bubble not near or intersecting with parent bubble
-  //   await bubbleService.create(authContext, {
-  //     ownerId: authContext.id,
-  //     name: "Bubble not near or intersecting with parent bubble",
-  //     longitude: -112.22812688371206,
-  //     latitude: 40.599792638496865,
-  //     radius: 5,
-  //   });
+    //Bubble not near or intersecting with parent bubble
+    await bubbleService.create(authContext, {
+      ownerId: authContext.id,
+      name: "Bubble not near or intersecting with parent bubble",
+      longitude: -112.22812688371206,
+      latitude: 40.599792638496865,
+      radius: 5,
+    });
 
-  //   const intersectingBubbles = await bubbleTable.bubblesIntersectingWithParentBubble(parentBubble.id) as Bubble[];
+    const input: MessageInput = {
+      bubbleId: parentBubble.id,
+      ownerId: authContext.id,
+      content: anyAlphaNumeric(),
+    };
+    const message = await messageService.create(authContext, input);
+    expect(message.bubbleId).to.equal(input.bubbleId);
+    expect(message.ownerId).to.equal(input.ownerId);
 
-  //   console.log("Intersecting Bubbles", intersectingBubbles);
-  // });
+    const fetchedParentBubble = await bubbleService.get(authContext, parentBubble.id);
+    expect(fetchedParentBubble.id).to.equal(parentBubble.id);
+    const foundCreatedMessageInParentBubble = fetchedParentBubble.messages.find(message => message.bubbleId === input.bubbleId);
+    expect(foundCreatedMessageInParentBubble.content).to.equal(message.content);
+
+    const fetchedIntersectingBubble = await bubbleService.get(authContext, bubbleNearAndIntersecting.id);
+    expect(fetchedIntersectingBubble.id).to.equal(bubbleNearAndIntersecting.id);
+    const foundCreatedMessageInIntersectingBubble = fetchedIntersectingBubble.messages.find(message => message.content === input.content);
+    expect(foundCreatedMessageInIntersectingBubble.content).to.equal(message.content);
+  });
 });
