@@ -4,7 +4,7 @@ import { BubbleEntity, BubblesTable } from "./bubble-table";
 import BubbleMigrations from "../../migrations/bubbles/Bubbles";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { get } from "../../common/utils/env";
-import { BubbleInput, BubblePatch, BubblesFilter } from "./bubble-types";
+import { Bubble, BubbleInput, BubblePatch, BubblesFilter } from "./bubble-types";
 import { anyAlphaNumeric } from "../../common/utils/testutils";
 import { expect } from "chai";
 import { AuthContext } from "../../common/auth/auth-context";
@@ -16,7 +16,7 @@ import { MessageEntity } from "../messages/message-table";
 import MessageMigrations from "../../migrations/messages/Messages";
 import BubblesMessagesMigrations from "../../migrations/bubbles_messages/Bubbles-Messages";
 
-describe.only("bubble-service", () => {
+describe("bubble-service", () => {
   let bubbleService: BubbleService;
   let bubbleTable: BubblesTable;
   let bubbleDataSource: DataSource;
@@ -185,47 +185,47 @@ describe.only("bubble-service", () => {
     expect(deletedBubble.deletedAt).to.not.be.null;
   });
 
-  it.only('Returns intersecting bubbles', async () => {
-    //Create bubbles
+  // it.only('Returns intersecting bubbles', async () => {
+  //   //Create bubbles
 
-    //Parent bubble
-    const parentBubble = await bubbleService.create(authContext, {
-      ownerId: authContext.id,
-      name: "Parent bubble",
-      longitude: -111.93937357479808,
-      latitude: 40.607595375102306,
-      radius: 5,
-    });
+  //   //Parent bubble
+  //   const parentBubble = await bubbleService.create(authContext, {
+  //     ownerId: authContext.id,
+  //     name: "Parent bubble",
+  //     longitude: -111.93937357479808,
+  //     latitude: 40.607595375102306,
+  //     radius: 5,
+  //   });
 
-    //Bubble near and intersecting with parent bubble
-    const bubbleNearAndIntersecting = await bubbleService.create(authContext, {
-      ownerId: authContext.id,
-      name: "Bubble near and intersecting with parent bubble",
-      longitude: -111.99470091302237,
-      latitude: 40.606273182314425,
-      radius: 4,
-    });
+  //   //Bubble near and intersecting with parent bubble
+  //   await bubbleService.create(authContext, {
+  //     ownerId: authContext.id,
+  //     name: "Bubble near and intersecting with parent bubble",
+  //     longitude: -111.99470091302237,
+  //     latitude: 40.606273182314425,
+  //     radius: 4,
+  //   });
 
-    //Bubble near but not intersecting with parent bubble
-    const bubbleNearAndNotIntersecting = await bubbleService.create(authContext, {
-      ownerId: authContext.id,
-      name: "Bubble near but not intersecting with parent bubble",
-      longitude: -112.08590781215449,
-      latitude: 40.60135133931723,
-      radius: 1,
-    });
+  //   //Bubble near but not intersecting with parent bubble
+  //   await bubbleService.create(authContext, {
+  //     ownerId: authContext.id,
+  //     name: "Bubble near but not intersecting with parent bubble",
+  //     longitude: -112.08590781215449,
+  //     latitude: 40.60135133931723,
+  //     radius: 1,
+  //   });
 
-    //Bubble not near or intersecting with parent bubble
-    const bubbleNotNearAndNotIntersecting = await bubbleService.create(authContext, {
-      ownerId: authContext.id,
-      name: "Bubble not near or intersecting with parent bubble",
-      longitude: -112.22812688371206,
-      latitude: 40.599792638496865,
-      radius: 5,
-    });
+  //   //Bubble not near or intersecting with parent bubble
+  //   await bubbleService.create(authContext, {
+  //     ownerId: authContext.id,
+  //     name: "Bubble not near or intersecting with parent bubble",
+  //     longitude: -112.22812688371206,
+  //     latitude: 40.599792638496865,
+  //     radius: 5,
+  //   });
 
-    const nearbyBubbles = await bubbleTable.bubblesIntersectingWithParentBubble(parentBubble.id);
+  //   const intersectingBubbles = await bubbleTable.bubblesIntersectingWithParentBubble(parentBubble.id) as Bubble[];
 
-    console.log("look here", nearbyBubbles);
-  });
+  //   console.log("Intersecting Bubbles", intersectingBubbles);
+  // });
 });

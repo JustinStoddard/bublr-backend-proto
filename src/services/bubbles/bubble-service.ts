@@ -82,8 +82,6 @@ export class BubbleService {
 
     const bubbles = await this.bubbles.bubblesIntersectingWithParentBubble(message.bubbleId);
 
-    console.log("look here 2", bubbles);
-
     bubbles.forEach(bubble => {
       if (!bubble.messages) {
         bubble.messages = [];
