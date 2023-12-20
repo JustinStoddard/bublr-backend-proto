@@ -87,8 +87,9 @@ export class BubblesTable {
     const radiusMiles = 25;
     const radiusKilometers = radiusMiles * 1.60934;
 
-    const nearbyBubbles = await this.bubblesRepository
+    const nearbyBubbles: Bubble[] = await this.bubblesRepository
       .createQueryBuilder("bubbles")
+      .leftJoinAndSelect('bubbles.messages', 'messages')
       .where(
         `(6371 * acos(cos(radians(:parentLat)) * cos(radians(bubbles.latitude)) * cos(radians(bubbles.longitude) - radians(:parentLong)) + sin(radians(:parentLat)) * sin(radians(bubbles.latitude)))) <= :radius`,
         {
@@ -97,20 +98,23 @@ export class BubblesTable {
           radius: radiusKilometers,
         }
       )
+      .andWhere('bubbles.id != :id', { id: parentBubble.id })
       .getMany();
 
-    return nearbyBubbles as Bubble[];
+    return nearbyBubbles;
   };
 
   bubblesIntersectingWithParentBubble = async (id: string): Promise<Bubble[]> => {
-    const parentBubble = await this.bubblesRepository.find({
+    const parentBubble = await this.bubblesRepository.findOne({
       where: {
         id,
+        deletedAt: IsNull(),
       },
+      relations: ['messages'],
     }).then(res => res[0]);
     const nearbyBubbles = await this.bubblesNearParentBubble(parentBubble);
 
-    const intersectingBubbles = nearbyBubbles.filter(bubble => {
+    const intersectingBubbles: Bubble[] = nearbyBubbles.filter(async bubble => {
       const distanceBetweenCenters = this.calculateDistance(
         parentBubble.latitude,
         parentBubble.longitude,
@@ -118,13 +122,15 @@ export class BubblesTable {
         bubble.longitude
       );
 
-      const sumOfRadii = 10 + bubble.radius; // 10 miles for parent bubble, bubble.radius for nearby bubbles
+      const sumOfRadii = parentBubble.radius + bubble.radius;
 
       // Check if the circles intersect based on their distances and radii
       return distanceBetweenCenters <= sumOfRadii;
     });
 
-    return intersectingBubbles as Bubble[];
+    console.log("fetched bubble", [...intersectingBubbles, parentBubble]);
+
+    return [...intersectingBubbles, parentBubble];
   };
 
   filterQuery = (filter: BubblesFilter) => {
@@ -158,8 +164,9 @@ export class BubblesTable {
       relations: ['messages'],
     }).then(res => res[0]);
 
-    bubble.messages = bubble.messages.filter(message => message.deletedAt === null);
-
+    if (bubble.messages) {
+      bubble.messages = bubble.messages.filter(message => message.deletedAt === null);
+    }
     return bubble;
   };
 
