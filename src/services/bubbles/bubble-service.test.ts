@@ -21,12 +21,11 @@ import { MessageInput } from "../messages/message-types";
 describe("bubble-service", () => {
   let bubbleService: BubbleService;
   let messageService: MessageService;
-  let bubbleDataSource: DataSource;
   let authContext: AuthContext;
 
   before(async () => {
     const url = new URL(get('POSTGRES_URL'));
-    bubbleDataSource = new DataSource({
+    const bubbleDataSource = new DataSource({
       url: url.toString(),
       type: "postgres",
       migrationsRun: true,

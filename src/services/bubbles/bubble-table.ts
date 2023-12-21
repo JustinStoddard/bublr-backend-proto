@@ -87,9 +87,10 @@ export class BubblesTable {
     const radiusMiles = 25;
     const radiusKilometers = radiusMiles * 1.60934;
 
+    console.log("radius kilometers", radiusKilometers);
+
     const nearbyBubbles: Bubble[] = await this.bubblesRepository
       .createQueryBuilder("bubbles")
-      .leftJoinAndSelect('bubbles.messages', 'messages')
       .where(
         `(6371 * acos(cos(radians(:parentLat)) * cos(radians(bubbles.latitude)) * cos(radians(bubbles.longitude) - radians(:parentLong)) + sin(radians(:parentLat)) * sin(radians(bubbles.latitude)))) <= :radius`,
         {
@@ -99,6 +100,7 @@ export class BubblesTable {
         }
       )
       .andWhere('bubbles.id != :id', { id: parentBubble.id })
+      .leftJoinAndSelect('bubbles.messages', 'messages')
       .getMany();
 
     return nearbyBubbles;
@@ -116,7 +118,10 @@ export class BubblesTable {
         bubble.longitude
       );
 
-      const sumOfRadii = parentBubble.radius + bubble.radius;
+      const parentBubblesRadiusKilometers = parentBubble.radius * 1.60934;
+      const bubbleRadiusKilometers = bubble.radius * 1.60934;
+
+      const sumOfRadii = parentBubblesRadiusKilometers + bubbleRadiusKilometers;
 
       // Check if the circles intersect based on their distances and radii
       return distanceBetweenCenters <= sumOfRadii;
