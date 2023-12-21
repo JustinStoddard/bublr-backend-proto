@@ -76,41 +76,39 @@ describe.only('bubble-table', () => {
     parentBubble = await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Parent bubble",
-      longitude: -111.93841241304278,
-      latitude: 40.60853868929317,
-      radius: 5,
+      longitude: -111.93868075483469,
+      latitude: 40.60926871316336,
+      radius: 1,
     });
 
     //Bubble near and intersecting with parent bubble
     bubbleNearAndIntersecting = await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Bubble near and intersecting with parent bubble",
-      longitude: -111.99871254740204,
-      latitude: 40.608037724143344,
-      radius: 4,
+      longitude: -111.96752569104453,
+      latitude: 40.60930329543499,
+      radius: 1,
     });
 
     //Bubble near but not intersecting with parent bubble
     await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Bubble near but not intersecting with parent bubble",
-      longitude: -112.0212154425769,
-      latitude: 40.520264627046345,
-      radius: 3,
+      longitude: -112.02422149108165,
+      latitude: 40.60942627104078,
+      radius: 1,
     });
 
     //Bubble not near or intersecting with parent bubble
     await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Bubble not near or intersecting with parent bubble",
-      longitude: -112.19839109602803,
-      latitude: 40.524912745044844,
-      radius: 4,
+      longitude: -112.41635454318617,
+      latitude: 40.60644245314866,
+      radius: 1,
     });
 
     const bubblesNearParentBubble = await bubbleTable.bubblesNearParentBubble(parentBubble);
-
-    console.log("Bubbles near parent", bubblesNearParentBubble);
 
     bubblesNearParentBubble.map(bubble => {
       if (bubble.name === "Bubble not near or intersecting with parent bubble") expect(true).to.be.false;
@@ -120,8 +118,6 @@ describe.only('bubble-table', () => {
 
   it('Should only fetch bubbles that intersect with parent bubble', async () => {
     const bubblesIntersectingWithParentBubble = await bubbleTable.bubblesIntersectingWithParentBubble(parentBubble.id);
-
-    console.log("Bubbles intersecting with parent", bubblesIntersectingWithParentBubble);
 
     bubblesIntersectingWithParentBubble.map(bubble => {
       if (bubble.name === "Bubble not near or intersecting with parent bubble" || bubble.name === "Bubble near but not intersecting with parent bubble") {

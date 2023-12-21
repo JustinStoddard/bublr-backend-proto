@@ -201,26 +201,26 @@ describe("bubble-service", () => {
     const parentBubble = await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Parent bubble",
-      longitude: -111.93937357479808,
-      latitude: 40.607595375102306,
-      radius: 5,
+      longitude: -111.93868075483469,
+      latitude: 40.60926871316336,
+      radius: 1,
     });
 
     //Bubble near and intersecting with parent bubble
     const bubbleNearAndIntersecting = await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Bubble near and intersecting with parent bubble",
-      longitude: -111.99470091302237,
-      latitude: 40.606273182314425,
-      radius: 4,
+      longitude: -111.96752569104453,
+      latitude: 40.60930329543499,
+      radius: 1,
     });
 
     //Bubble near but not intersecting with parent bubble
     await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Bubble near but not intersecting with parent bubble",
-      longitude: -112.08590781215449,
-      latitude: 40.60135133931723,
+      longitude: -112.02422149108165,
+      latitude: 40.60942627104078,
       radius: 1,
     });
 
@@ -228,9 +228,9 @@ describe("bubble-service", () => {
     await bubbleService.create(authContext, {
       ownerId: authContext.id,
       name: "Bubble not near or intersecting with parent bubble",
-      longitude: -112.22812688371206,
-      latitude: 40.599792638496865,
-      radius: 5,
+      longitude: -112.41635454318617,
+      latitude: 40.60644245314866,
+      radius: 1,
     });
 
     const input: MessageInput = {

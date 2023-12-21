@@ -84,7 +84,7 @@ export class BubblesTable {
   }
 
   bubblesNearParentBubble = async (parentBubble: Bubble): Promise<Bubble[]> => {
-    const radiusMiles = 25;
+    const radiusMiles = 20;
     const radiusKilometers = radiusMiles * 1.60934;
 
     console.log("radius kilometers", radiusKilometers);
@@ -110,7 +110,7 @@ export class BubblesTable {
     const parentBubble = await this.get(id);
     const nearbyBubbles = await this.bubblesNearParentBubble(parentBubble);
 
-    const intersectingBubbles: Bubble[] = nearbyBubbles.filter(async bubble => {
+    const intersectingBubbles: Bubble[] = nearbyBubbles.filter(bubble => {
       const distanceBetweenCenters = this.calculateDistance(
         parentBubble.latitude,
         parentBubble.longitude,
@@ -123,8 +123,9 @@ export class BubblesTable {
 
       const sumOfRadii = parentBubblesRadiusKilometers + bubbleRadiusKilometers;
 
-      // Check if the circles intersect based on their distances and radii
-      return distanceBetweenCenters <= sumOfRadii;
+      if (sumOfRadii >= distanceBetweenCenters) {
+        return bubble;
+      }
     });
 
     return [...intersectingBubbles, parentBubble];
