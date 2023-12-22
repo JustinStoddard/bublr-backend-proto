@@ -68,6 +68,7 @@ export const startWebServer = async (port: number, services: {
   app.use(UsersController(services.userService));
 
   return server.listen(port, () => {
-    log.info({ message: `Listening on port: ${port}` });
+    log.info({ message: `[HTTP Server]: Running on http://localhost:${port}` });
+    log.info({ message: `[Web Socket]: Running on ws://localhost:${port}` });
   });
 };
