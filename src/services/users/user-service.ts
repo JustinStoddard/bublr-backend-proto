@@ -77,7 +77,6 @@ export class UserService {
         },
       });
     }
-
     return uuidParse(value);
   };
 
