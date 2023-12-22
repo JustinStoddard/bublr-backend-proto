@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { get } from '../../common/utils/env';
 import { AppError, ErrorCodes, Issues } from '../../common/errors/app-error';
 
-const verifyToken = (ctx: Koa.Context) => {
+const verifyToken = (ctx: Koa.ParameterizedContext) => {
   const token = ctx.header.authorization?.split(' ')[1];
   if (!token) {
     throw new AppError({
