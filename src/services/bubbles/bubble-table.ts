@@ -87,8 +87,6 @@ export class BubblesTable {
     const radiusMiles = 20;
     const radiusKilometers = radiusMiles * 1.60934;
 
-    console.log("radius kilometers", radiusKilometers);
-
     const nearbyBubbles: Bubble[] = await this.bubblesRepository
       .createQueryBuilder("bubbles")
       .where(

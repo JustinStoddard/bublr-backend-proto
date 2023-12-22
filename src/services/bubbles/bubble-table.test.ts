@@ -16,7 +16,7 @@ import { BubbleService } from "./bubble-service";
 import { Bubble } from "./bubble-types";
 import { expect } from "chai";
 
-describe.only('bubble-table', () => {
+describe('bubble-table', () => {
   let bubbleTable: BubblesTable;
   let bubbleService: BubbleService;
   let authContext: AuthContext;

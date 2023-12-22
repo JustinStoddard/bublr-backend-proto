@@ -59,7 +59,7 @@ export const startWebServer = async (port: number, services: {
         log.info({ message: `Sending message to ${client.ownerId}` });
         client.socket.send(uuidv4());
       }
-    })
+    });
   };
 
   //Apply routes
