@@ -12,7 +12,7 @@ import { BubbleService } from "./services/bubbles/bubble-service";
 import { MessageService } from "./services/messages/message-service";
 import { UserService } from "./services/users/user-service";
 import { startWebServer } from "./web/webserver";
-import BubblesMessagesMigrations from "./migrations/bubbles_messages/Bubbles-Messages";
+import BubblesMessagesMigrations from "./migrations/bubbles-messages/Bubbles-Messages";
 
 require('source-map-support').install();
 

@@ -14,7 +14,7 @@ import { UserService } from "../users/user-service";
 import { AccountType, UserInput } from "../users/user-types";
 import { MessageEntity, MessagesTable } from "../messages/message-table";
 import MessageMigrations from "../../migrations/messages/Messages";
-import BubblesMessagesMigrations from "../../migrations/bubbles_messages/Bubbles-Messages";
+import BubblesMessagesMigrations from "../../migrations/bubbles-messages/Bubbles-Messages";
 import { MessageService } from "../messages/message-service";
 import { MessageInput } from "../messages/message-types";
 

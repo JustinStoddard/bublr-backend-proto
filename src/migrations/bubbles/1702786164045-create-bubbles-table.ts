@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 export class Bubbles1702786164045 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE bubbles (
+      `CREATE TABLE "bubbles" (
         id uuid primary key default gen_random_uuid(),
         created_at timestamptz not null default now(),
         updated_at timestamptz not null default now(),
@@ -20,7 +20,7 @@ export class Bubbles1702786164045 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `DROP TABLE bubbles
+      `DROP TABLE "bubbles"
       `
     )
   }

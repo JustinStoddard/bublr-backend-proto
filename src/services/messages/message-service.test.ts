@@ -16,7 +16,7 @@ import UserMigrations from "../../migrations/users/Users";
 import { UserService } from "../users/user-service";
 import { AccountType, UserInput } from "../users/user-types";
 import { Bubble, BubbleInput } from "../bubbles/bubble-types";
-import BubblesMessagesMigrations from "../../migrations/bubbles_messages/Bubbles-Messages";
+import BubblesMessagesMigrations from "../../migrations/bubbles-messages/Bubbles-Messages";
 
 describe("message-service", () => {
   let messageService: MessageService;

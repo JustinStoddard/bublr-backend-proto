@@ -7,7 +7,7 @@ import { MessageEntity } from "../messages/message-table";
 import BubbleMigrations from "../../migrations/bubbles/Bubbles";
 import UserMigrations from "../../migrations/users/Users";
 import MessageMigrations from "../../migrations/messages/Messages";
-import BubblesMessagesMigrations from "../../migrations/bubbles_messages/Bubbles-Messages";
+import BubblesMessagesMigrations from "../../migrations/bubbles-messages/Bubbles-Messages";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { UserService } from "../users/user-service";
 import { AccountType, UserInput } from "../users/user-types";

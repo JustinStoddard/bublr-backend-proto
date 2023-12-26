@@ -136,7 +136,7 @@ export class UsersTable {
       });
   };
 
-  delete = async (id: string) => {
+  delete = async (id: string): Promise<User> => {
     return await this.usersRepository
       .createQueryBuilder('bubbles')
       .update(UserEntity)
