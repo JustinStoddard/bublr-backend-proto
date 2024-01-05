@@ -167,6 +167,24 @@ export class UserService {
     return { user, token };
   };
 
+  strike = async (id: string) => {
+    //Validate id
+    this.assertArgumentUuid('id', id);
+
+    //Fetch user
+    let user: User = await this.users.get(id);
+
+    //Throw not found error if user doesn't exist
+    if (!user) this.throwNotFoundError({ id });
+
+    const patch: UserPatch = {
+      id: user.id,
+      strikes: user.strikes + 1,
+    };
+
+    await this.users.patch(patch);
+  };
+
   get = async (ctx: AuthContext, id: string): Promise<User> => {
     //Validate id
     this.assertArgumentUuid('id', id);
@@ -211,6 +229,12 @@ export class UserService {
 
     //Patch user
     user = await this.users.patch(patch);
+
+    const maxStrikesAllowed = parseInt(get('MAX_USER_STRIKES'));
+    if (user.strikes >= maxStrikesAllowed) {
+      //Delete user account if they have more than the allowed number of strikes. NO MERCY
+      user = await this.users.delete(user.id);
+    }
 
     //Log that a user patched a user
     this.log.info({ message: `user: ${ctx.id} patched user: ${user.id}` });

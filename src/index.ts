@@ -67,6 +67,7 @@ const setup = async () => {
   );
   const messageService = new MessageService(
     messagesTable,
+    userService,
     bubbleService,
   );
 

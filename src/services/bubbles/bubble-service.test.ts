@@ -59,6 +59,7 @@ describe("bubble-service", () => {
     );
     messageService = new MessageService(
       messageTable,
+      userService,
       bubbleService,
     );
 

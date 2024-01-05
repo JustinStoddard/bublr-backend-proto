@@ -5,12 +5,15 @@ import { MessagesTable } from "./message-table";
 import { Message, MessageInput, MessagePage, MessagePatch, MessagesFilter } from './message-types';
 import { AuthContext } from '../../common/auth/auth-context';
 import { BubbleService } from '../bubbles/bubble-service';
+import { UserService } from '../users/user-service';
+import { get } from '../../common/utils/env';
 
 export class MessageService {
   public log = LogFactory.getLogger(LogCategory.request);
 
   constructor(
     private messages: MessagesTable,
+    private users: UserService,
     private bubbles: BubbleService,
   ) {};
 
@@ -122,6 +125,13 @@ export class MessageService {
 
     //Patch message
     message = await this.messages.patch(patch);
+
+    const maxReportsAllowed = parseInt(get('MAX_MESSAGE_REPORTS'));
+    if (message.reports >= maxReportsAllowed) {
+      //If the message has received 3 reports then delete the message and strike the user once.
+      message = await this.delete(ctx, message.id);
+      await this.users.strike(message.ownerId);
+    }
 
     //Log if user patched a message
     this.log.info({ message: `user: ${ctx.id} patched message: ${message.id}` });
