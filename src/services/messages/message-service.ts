@@ -24,8 +24,6 @@ export class MessageService {
     });
   };
 
-  //skow bubble id - a85515a7-e14a-427d-a506-c33cbb8bcbef
-
   throwForbiddenError = (args: any) => {
     throw new AppError({
       code: ErrorCodes.ERR_FORBIDDEN,
