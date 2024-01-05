@@ -7,6 +7,7 @@ import { AuthContext } from '../../common/auth/auth-context';
 import { BubbleService } from '../bubbles/bubble-service';
 import { UserService } from '../users/user-service';
 import { get } from '../../common/utils/env';
+import { WebSocketEvent } from '../../common/types/web-socket';
 
 export class MessageService {
   public log = LogFactory.getLogger(LogCategory.request);
@@ -15,6 +16,7 @@ export class MessageService {
     private messages: MessagesTable,
     private users: UserService,
     private bubbles: BubbleService,
+    private sendWebSocketEvent: (message: WebSocketEvent) => void,
   ) {};
 
   throwNotFoundError = (args: any) => {

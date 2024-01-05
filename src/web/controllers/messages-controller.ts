@@ -4,10 +4,7 @@ import { MessageService } from "../../services/messages/message-service";
 import { MessageInput, MessagePatch } from "../../services/messages/message-types";
 import { AuthContext } from "../../common/auth/auth-context";
 
-export const MessagesController = (
-  messageService: MessageService,
-  sendWebSocketMessage: () => void,
-): IMiddleware => {
+export const MessagesController = (messageService: MessageService): IMiddleware => {
 
   const router = new Router();
   router.use(bodyParser());
@@ -16,7 +13,6 @@ export const MessagesController = (
     const input = ctx.request.body as MessageInput;
     const authCtx = ctx.state.auth as AuthContext;
     const message = await messageService.create(authCtx ,input);
-    sendWebSocketMessage();
     ctx.body = message;
     ctx.status = 201;
   });

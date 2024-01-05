@@ -7,12 +7,14 @@ import { LogCategory, LogFactory } from "../../common/logging/logger";
 import { UsersTable } from "./user-table";
 import { User, UserInput, UserLoginInput, UserPage, UserPatch, UsersFilter } from './user-types';
 import { AuthContext } from '../../common/auth/auth-context';
+import { WebSocketEvent } from '../../common/types/web-socket';
 
 export class UserService {
   public log = LogFactory.getLogger(LogCategory.request);
 
   constructor(
     private users: UsersTable,
+    private sendWebSocketEvent: (message: WebSocketEvent) => void,
   ) {};
 
   throwNotFoundError = (args: any) => {

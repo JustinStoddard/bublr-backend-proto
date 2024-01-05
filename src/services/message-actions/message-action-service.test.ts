@@ -49,6 +49,7 @@ describe("message-action-service", () => {
     );
     const userService = new UserService(
       userTable,
+      () => {},
     );
 
     const bubbleTable = new BubblesTable(
@@ -57,6 +58,7 @@ describe("message-action-service", () => {
     const bubbleService = new BubbleService(
       bubbleTable,
       userService,
+      () => {},
     );
 
     const messageTable = new MessagesTable(
@@ -66,6 +68,7 @@ describe("message-action-service", () => {
       messageTable,
       userService,
       bubbleService,
+      () => {},
     );
 
     const messageActionTable = new MessageActionsTable(

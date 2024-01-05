@@ -45,6 +45,7 @@ describe("message-service", () => {
     );
     const userService = new UserService(
       userTable,
+      () => {},
     );
 
     const bubbleTable = new BubblesTable(
@@ -53,6 +54,7 @@ describe("message-service", () => {
     const bubbleService = new BubbleService(
       bubbleTable,
       userService,
+      () => {},
     );
     
     const messageTable = new MessagesTable(
@@ -62,6 +64,7 @@ describe("message-service", () => {
       messageTable,
       userService,
       bubbleService,
+      () => {},
     );
 
     const userInput: UserInput = {

@@ -57,25 +57,11 @@ const setup = async () => {
     bublrDataSource,
   );
 
-  //Setup Services
-  const userService = new UserService(
-    usersTable,
-  );
-  const bubbleService = new BubbleService(
-    bubblesTable,
-    userService,
-  );
-  const messageService = new MessageService(
-    messagesTable,
-    userService,
-    bubbleService,
-  );
-
   const port = parseInt(get('PORT'));
   await startWebServer(port, {
-    bubbleService,
-    messageService,
-    userService,
+    usersTable,
+    bubblesTable,
+    messagesTable,
   });
 };
 

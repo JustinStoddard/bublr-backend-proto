@@ -13,30 +13,20 @@ import { BubblesController } from './controllers/bubbles-controller';
 import { MessagesController } from './controllers/messages-controller';
 import { UsersController } from './controllers/users-controller';
 import { UserSessionsController } from './controllers/user-sessions-controller';
-import { WebSocket } from "ws";
+import { WebSocketClient, WebSocketEvent } from "../common/types/web-socket";
+import { BubblesTable } from "../services/bubbles/bubble-table";
+import { MessagesTable } from "../services/messages/message-table";
+import { UsersTable } from "../services/users/user-table";
 
-type WebSocketClient = {
-  ownerId: string;
-  socket: WebSocket;
-};
-
-export const startWebServer = async (port: number, services: {
-  bubbleService: BubbleService,
-  messageService: MessageService,
-  userService: UserService,
+export const startWebServer = async (port: number, tables: {
+  usersTable: UsersTable,
+  bubblesTable: BubblesTable,
+  messagesTable: MessagesTable,
 }) => {
   const app = websockify(new Koa());
   const server = Http.createServer(app.callback());
   const log = LogFactory.getLogger(LogCategory.system);
   let clients: WebSocketClient[] = [];
-
-  //Setup health controller
-  app.use(HealthController());
-  app.use(ErrorMiddleware());
-  app.use(UserSessionsController(services.userService));
-
-  //Apply middleware
-  app.use(AuthMiddleware());
 
   // Initialize WebSocket server
   app.ws.use(async (ctx, next) => {
@@ -53,19 +43,44 @@ export const startWebServer = async (port: number, services: {
   });
 
   //Create a function that can be used to send messages through the websocket.
-  const sendWebSocketMessage = () => {
+  const sendWebSocketEvent = (webSocketMessage: WebSocketEvent) => {
     clients.map(client => {
       if (client.socket.readyState === client.socket.OPEN) {
         log.info({ message: `Sending message to ${client.ownerId}` });
-        client.socket.send(uuidv4());
+        client.socket.send(JSON.stringify(webSocketMessage));
       }
     });
   };
 
+  //Setup Services
+  const userService = new UserService(
+    tables.usersTable,
+    (m: WebSocketEvent) => sendWebSocketEvent(m),
+  );
+  const bubbleService = new BubbleService(
+    tables.bubblesTable,
+    userService,
+    (m: WebSocketEvent) => sendWebSocketEvent(m),
+  );
+  const messageService = new MessageService(
+    tables.messagesTable,
+    userService,
+    bubbleService,
+    (m: WebSocketEvent) => sendWebSocketEvent(m),
+  );
+
+  //Setup health controller
+  app.use(HealthController());
+  app.use(ErrorMiddleware());
+  app.use(UserSessionsController(userService));
+
+  //Apply middleware
+  app.use(AuthMiddleware());
+
   //Apply routes
-  app.use(BubblesController(services.bubbleService));
-  app.use(MessagesController(services.messageService, sendWebSocketMessage));
-  app.use(UsersController(services.userService));
+  app.use(BubblesController(bubbleService));
+  app.use(MessagesController(messageService));
+  app.use(UsersController(userService));
 
   return server.listen(port, () => {
     log.info({ message: `[HTTP Server]: Running on http://localhost:${port}` });

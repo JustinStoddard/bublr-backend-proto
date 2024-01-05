@@ -1,7 +1,7 @@
 import Router, { IMiddleware } from "koa-router";
 import bodyParser from "koa-bodyparser";
 import { UserService } from "../../services/users/user-service";
-import { UserInput, UserLoginInput, UserPatch } from "../../services/users/user-types";
+import { UserPatch } from "../../services/users/user-types";
 import { AuthContext } from "../../common/auth/auth-context";
 
 export const UsersController = (userService: UserService): IMiddleware => {
