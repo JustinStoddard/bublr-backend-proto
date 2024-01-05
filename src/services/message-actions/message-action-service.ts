@@ -70,30 +70,25 @@ export class MessageActionService {
   handleAction = async (ctx: AuthContext, operation: "create" | "delete", messageId: string, actionType: MessageActionType) => {
     const message = await this.messages.get(ctx, messageId);
 
-    switch (actionType) {
-      case MessageActionType.Like: {
-        const patch: MessagePatch = {
-          id: messageId,
-          likes: operation === "create" ? message.likes + 1 : message.likes - 1,
-        };
-        await this.messages.patch(ctx, patch);
+    if (actionType === MessageActionType.Like) {
+      const patch: MessagePatch = {
+        id: messageId,
+        likes: operation === "create" ? message.likes + 1 : message.likes - 1,
       };
-      case MessageActionType.Dislike: {
-        const patch: MessagePatch = {
-          id: messageId,
-          dislikes: operation === "create" ? message.dislikes + 1: message.dislikes - 1,
-        };
-        await this.messages.patch(ctx, patch);
+      await this.messages.patch(ctx, patch);
+    } else if (actionType === MessageActionType.Dislike) {
+      const patch: MessagePatch = {
+        id: messageId,
+        dislikes: operation === "create" ? message.dislikes + 1: message.dislikes - 1,
       };
-      case MessageActionType.Report: {
-        const patch: MessagePatch = {
-          id: messageId,
-          dislikes: operation === "create" ? message.reports + 1: message.reports - 1,
-        };
-        await this.messages.patch(ctx, patch);
+      await this.messages.patch(ctx, patch);
+    } else if (actionType === MessageActionType.Report) {
+      const patch: MessagePatch = {
+        id: messageId,
+        reports: operation === "create" ? message.reports + 1: message.reports - 1,
       };
-      default:
-    };
+      await this.messages.patch(ctx, patch);
+    }
   };
 
   create = async (ctx: AuthContext, input: MessageActionInput): Promise<MessageAction> => {

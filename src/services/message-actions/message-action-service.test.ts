@@ -62,7 +62,7 @@ describe("message-action-service", () => {
     const messageTable = new MessagesTable(
       messageActionDataSource,
     );
-    const messageService = new MessageService(
+    messageService = new MessageService(
       messageTable,
       bubbleService,
     );
@@ -160,7 +160,7 @@ describe("message-action-service", () => {
 
     const messageActionPage = await messageActionService.find(authContext, filter);
     expect(messageActionPage.total).to.be.greaterThanOrEqual(2);
-    expect(messageActionPage.rows).to.equal(messageActionPage.total);
+    expect(messageActionPage.rows.length).to.equal(messageActionPage.total);
   });
 
   it('Deletes message action and decrements counters based on action type', async () => {
