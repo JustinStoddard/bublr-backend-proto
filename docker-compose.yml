@@ -29,8 +29,9 @@ services:
       BUBLR_JWT_SECRET: IkeaTower801
       PORT: 8080
       LOG_LEVEL: 1
-      MAX_MESSAGE_REPORTS: 3
-      MAX_USER_STRIKES: 3
+      MAX_MESSAGE_REPORTS: 2
+      MAX_USER_STRIKES: 2
+      MAX_USER_OFFENSES: 2
     ports:
       - 8080:8080
 
@@ -48,4 +49,7 @@ services:
       BUBLR_JWT_SECRET: IkeaTower801
       PORT: 8080
       LOG_LEVEL: 1
+      MAX_MESSAGE_REPORTS: 2
+      MAX_USER_STRIKES: 2
+      MAX_USER_OFFENSES: 2
     

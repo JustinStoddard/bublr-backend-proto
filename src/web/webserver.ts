@@ -13,7 +13,7 @@ import { BubblesController } from './controllers/bubbles-controller';
 import { MessagesController } from './controllers/messages-controller';
 import { UsersController } from './controllers/users-controller';
 import { UserSessionsController } from './controllers/user-sessions-controller';
-import { WebSocketClient, WebSocketEvent } from "../common/types/web-socket";
+import { WebSocketClient, WebSocketEvent, WebSocketEventType } from "../common/types/web-socket";
 import { BubblesTable } from "../services/bubbles/bubble-table";
 import { MessagesTable } from "../services/messages/message-table";
 import { UsersTable } from "../services/users/user-table";
@@ -43,11 +43,16 @@ export const startWebServer = async (port: number, tables: {
   });
 
   //Create a function that can be used to send messages through the websocket.
-  const sendWebSocketEvent = (webSocketMessage: WebSocketEvent) => {
+  const sendWebSocketEvent = (webSocketEventType: WebSocketEventType, corrId: string) => {
     clients.map(client => {
       if (client.socket.readyState === client.socket.OPEN) {
         log.info({ message: `Sending message to ${client.ownerId}` });
-        client.socket.send(JSON.stringify(webSocketMessage));
+        const event: WebSocketEvent = {
+          id: uuidv4(),
+          type: webSocketEventType,
+          corrId,
+        };
+        client.socket.send(JSON.stringify(event));
       }
     });
   };
@@ -55,18 +60,18 @@ export const startWebServer = async (port: number, tables: {
   //Setup Services
   const userService = new UserService(
     tables.usersTable,
-    (m: WebSocketEvent) => sendWebSocketEvent(m),
+    (type: WebSocketEventType, corrId: string) => sendWebSocketEvent(type, corrId),
   );
   const bubbleService = new BubbleService(
     tables.bubblesTable,
     userService,
-    (m: WebSocketEvent) => sendWebSocketEvent(m),
+    (type: WebSocketEventType, corrId: string) => sendWebSocketEvent(type, corrId),
   );
   const messageService = new MessageService(
     tables.messagesTable,
     userService,
     bubbleService,
-    (m: WebSocketEvent) => sendWebSocketEvent(m),
+    (type: WebSocketEventType, corrId: string) => sendWebSocketEvent(type, corrId),
   );
 
   //Setup health controller

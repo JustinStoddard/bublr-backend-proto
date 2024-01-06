@@ -133,7 +133,7 @@ export class BubblesTable {
     let query = this.bubblesRepository.createQueryBuilder("bubbles");
 
     if (filter?.ownerId) {
-      query = query.where('bubbles.owner_id = :ownerId');
+      query = query.where('owner_id = :ownerId');
     }
 
     return query.setParameters(filter);

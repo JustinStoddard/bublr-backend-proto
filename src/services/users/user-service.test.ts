@@ -8,8 +8,9 @@ import { AccountType, UserInput, UserLoginInput, UserPatch, UsersFilter } from "
 import { expect } from "chai";
 import { anyAlphaNumeric, anyId } from "../../common/utils/testutils";
 import { AuthContext } from "../../common/auth/auth-context";
+import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 
-describe("user-service", () => {
+describe.only("user-service", () => {
   let userService: UserService;
   let userDataSource: DataSource;
   let authContext: AuthContext;
@@ -36,6 +37,7 @@ describe("user-service", () => {
     );
     userService = new UserService(
       userTable,
+      () => {},
     );
   });
 
@@ -129,5 +131,92 @@ describe("user-service", () => {
     const deletedUser = await userService.delete(authContext, authContext.id);
     expect(deletedUser.id).to.equal(authContext.id);
     expect(deletedUser.deletedAt).to.not.be.null;
+  });
+
+  it('Should ban a user if they have 3 offenses', async () => {
+    const userInput: UserInput = {
+      displayName: "Jahstin",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
+      password: "stoic",
+      accountType: AccountType.Premium,
+    };
+
+    const user = await userService.register(userInput);
+    expect(user.user.email).to.equal(userInput.email);
+
+    authContext = {
+      ...user.user,
+      iat: 234523452345,
+      exp: 234523452345
+    };
+
+    let guiltyUser = await userService.reportOffense(user.user.id);
+    expect(guiltyUser.banStatus.offenses).to.equal(1);
+
+    guiltyUser = await userService.reportOffense(user.user.id);
+    expect(guiltyUser.banStatus.offenses).to.equal(2);
+
+    guiltyUser = await userService.reportOffense(user.user.id);
+    expect(guiltyUser.banStatus.offenses).to.equal(3);
+
+    const fetchedUser = await userService.get(authContext, user.user.id);
+    expect(fetchedUser.banStatus.strikes).to.equal(1);
+    expect(fetchedUser.banStatus.banExp).to.not.be.null;
+
+    const input: UserLoginInput = {
+      email: userInput.email,
+      password: userInput.password,
+    };
+    const error: AppError = await userService.login(input).catch(err => err);
+    expect(error).to.be.instanceOf(AppError);
+    expect(error.args.code).to.equal(ErrorCodes.ERR_FORBIDDEN);
+    expect(error.args.issue).to.equal(Issues.RESOURCE_NOT_AVAILABLE);
+  });
+
+  it.only('Should delete user account if user has 3 strikes', async () => {
+    const userInput: UserInput = {
+      displayName: "Jahstin",
+      handle: anyAlphaNumeric(),
+      email: anyAlphaNumeric(),
+      password: "stoic",
+      accountType: AccountType.Premium,
+    };
+
+    const user = await userService.register(userInput);
+    expect(user.user.email).to.equal(userInput.email);
+
+    authContext = {
+      ...user.user,
+      iat: 234523452345,
+      exp: 234523452345
+    };
+
+    await userService.reportOffense(user.user.id);
+    await userService.reportOffense(user.user.id);
+    await userService.reportOffense(user.user.id);
+
+    let fetchedUser = await userService.get(authContext, user.user.id);
+    expect(fetchedUser.banStatus.strikes).to.equal(1);
+
+    await userService.reportOffense(user.user.id);
+    await userService.reportOffense(user.user.id);
+    await userService.reportOffense(user.user.id);
+
+    fetchedUser = await userService.get(authContext, user.user.id);
+    expect(fetchedUser.banStatus.strikes).to.equal(2);
+
+    await userService.reportOffense(user.user.id);
+    await userService.reportOffense(user.user.id);
+    await userService.reportOffense(user.user.id);
+
+    const input: UserLoginInput = {
+      email: userInput.email,
+      password: userInput.password,
+    };
+    const error: AppError = await userService.login(input).catch(err => err);
+    expect(error).to.be.instanceOf(AppError);
+    expect(error.args.code).to.equal(ErrorCodes.ERR_NOT_FOUND);
+    expect(error.args.issue).to.equal(Issues.USER_NOT_FOUND);
   });
 });

@@ -7,14 +7,14 @@ import { LogCategory, LogFactory } from "../../common/logging/logger";
 import { UsersTable } from "./user-table";
 import { User, UserInput, UserLoginInput, UserPage, UserPatch, UsersFilter } from './user-types';
 import { AuthContext } from '../../common/auth/auth-context';
-import { WebSocketEvent } from '../../common/types/web-socket';
+import { WebSocketEventType } from '../../common/types/web-socket';
 
 export class UserService {
   public log = LogFactory.getLogger(LogCategory.request);
 
   constructor(
     private users: UsersTable,
-    private sendWebSocketEvent: (message: WebSocketEvent) => void,
+    private sendWebSocketEvent: (type: WebSocketEventType, corrId: string) => void,
   ) {};
 
   throwNotFoundError = (args: any) => {
@@ -99,6 +99,16 @@ export class UserService {
     this.assertArgumentUuid('id', patch.id);
   };
 
+  isCurrentDateAheadOfBanDate = (banDateISOString: string): boolean => {
+    const currentDate = new Date();
+    const banDate = new Date(banDateISOString);
+  
+    const currentTimestamp = currentDate.getTime();
+    const banDateTimestamp = banDate.getTime();
+  
+    return currentTimestamp > banDateTimestamp;
+  };
+
   private createJwt = (user: User): string => {
     const secret = get('BUBLR_JWT_SECRET');
     const token = jwt.sign({ ...user }, secret, { expiresIn: '4h' });
@@ -149,10 +159,15 @@ export class UserService {
     };
 
     //Attempt to fetch user with email
-    const user: User = await this.users.findOne(filter);
+    let user: User = await this.users.findOne(filter);
+
+    console.log("USER STUFF", user);
 
     //Throw not found error if user wasn't found
     if (!user) this.throwNotFoundError({ email: input.email });
+
+    //Throw forbidden error if user is banned
+    if (user.banStatus.banExp && !this.isCurrentDateAheadOfBanDate(user.banStatus.banExp)) this.throwForbiddenError({ banStatus: user.banStatus });
 
     //Check if the password passed in input matched the password saved in database
     const passwordMatch = await bcrypt.compare(input.password, user.password);
@@ -169,7 +184,7 @@ export class UserService {
     return { user, token };
   };
 
-  strike = async (id: string) => {
+  reportOffense = async (id: string): Promise<User> => {
     //Validate id
     this.assertArgumentUuid('id', id);
 
@@ -181,10 +196,57 @@ export class UserService {
 
     const patch: UserPatch = {
       id: user.id,
-      strikes: user.strikes + 1,
+      banStatus: {
+        ...user.banStatus,
+        offenses: user.banStatus.offenses + 1,
+      },
     };
 
-    await this.users.patch(patch);
+    user = await this.users.patch(patch);
+    const maxUserOffenses = parseInt(get('MAX_USER_OFFENSES'));
+    if (user.banStatus.offenses > maxUserOffenses) {
+      //Ban user if user has more than 3 offenses.
+      await this.strikeAndBan(patch.id);
+    }
+
+    return user;
+  };
+
+  strikeAndBan = async (id: string) => {
+    //Validate id
+    this.assertArgumentUuid('id', id);
+
+    //Fetch user
+    let user: User = await this.users.get(id);
+
+    //Throw not found error if user doesn't exist
+    if (!user) this.throwNotFoundError({ id });
+
+    const currentDate = new Date();
+    let futureDate = currentDate;
+    if (user.banStatus.strikes === 0) {
+      //Get a 3 day ban on your first strike.
+      futureDate = new Date(currentDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+    } else if (user.banStatus.strikes === 1) {
+      //Get a 6 day ban on your second strike.
+      futureDate = new Date(currentDate.getTime() + (6 * 24 * 60 * 60 * 1000));
+    }
+
+    const patch: UserPatch = {
+      id: user.id,
+      banStatus: {
+        banExp: futureDate.toISOString(),
+        offenses: 0,
+        strikes: user.banStatus.strikes + 1,
+      },
+    };
+
+    user = await this.users.patch(patch);
+    const maxStrikesAllowed = parseInt(get('MAX_USER_STRIKES'));
+    if (user.banStatus.strikes > maxStrikesAllowed) {
+      //Delete user account if they have more than the allowed number of strikes. NO MERCY
+      user = await this.users.delete(user.id);
+    }
   };
 
   get = async (ctx: AuthContext, id: string): Promise<User> => {
@@ -231,12 +293,6 @@ export class UserService {
 
     //Patch user
     user = await this.users.patch(patch);
-
-    const maxStrikesAllowed = parseInt(get('MAX_USER_STRIKES'));
-    if (user.strikes >= maxStrikesAllowed) {
-      //Delete user account if they have more than the allowed number of strikes. NO MERCY
-      user = await this.users.delete(user.id);
-    }
 
     //Log that a user patched a user
     this.log.info({ message: `user: ${ctx.id} patched user: ${user.id}` });

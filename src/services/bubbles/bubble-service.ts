@@ -6,7 +6,7 @@ import { LogCategory, LogFactory } from '../../common/logging/logger';
 import { AuthContext } from '../../common/auth/auth-context';
 import { UserService } from '../users/user-service';
 import { Message } from '../messages/message-types';
-import { WebSocketEvent } from '../../common/types/web-socket';
+import { WebSocketEventType } from '../../common/types/web-socket';
 
 export class BubbleService {
   private log = LogFactory.getLogger(LogCategory.request);
@@ -14,7 +14,7 @@ export class BubbleService {
   constructor(
     private bubbles: BubblesTable,
     private users: UserService,
-    private sendWebSocketEvent: (message: WebSocketEvent) => void,
+    private sendWebSocketEvent: (type: WebSocketEventType, corrId: string) => void,
   ) {};
 
   throwNotFoundError = (args: any) => {
@@ -92,9 +92,13 @@ export class BubbleService {
     });
 
     //Log that the user sent a message to bubbles
-    this.log.info({ message: `user: ${ctx.id} queried for bubbles intersecting with bubble: ${bubble.id}` });
+    this.log.info({ message: `user: ${ctx.id} sent messages to bubbles intersecting with bubble: ${bubble.id}` });
 
-    this.bubbles.saveBubbles(bubbles);
+    await this.bubbles.saveBubbles(bubbles);
+
+    bubbles.map(bubble => {
+      this.sendWebSocketEvent(WebSocketEventType.BubbleUpdated, bubble.id);
+    });
   };
 
   create = async (ctx: AuthContext, input: BubbleInput): Promise<Bubble> => {

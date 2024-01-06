@@ -4,6 +4,12 @@ export enum AccountType {
   Business = "business",
 }
 
+export type BanStatus = {
+  banExp: string;
+  offenses: number;
+  strikes: number;
+};
+
 export type User = {
   id: string;
   createdAt: string;
@@ -14,7 +20,7 @@ export type User = {
   email: string;
   password: string;
   accountType: AccountType;
-  strikes: number;
+  banStatus: BanStatus;
 };
 
 export type UserInput = {
@@ -35,7 +41,7 @@ export type UserPatch = {
   displayName?: string;
   handle?: string;
   accountType?: AccountType;
-  strikes?: number;
+  banStatus?: BanStatus;
 };
 
 export type UsersFilter = {
@@ -43,7 +49,6 @@ export type UsersFilter = {
   handle?: string;
   email?: string;
   accountType?: AccountType;
-  strikes?: boolean;
   offset?: number;
   limit?: number;
   includeTotal?: boolean;

@@ -67,7 +67,7 @@ export class MessagesTable {
     let query = this.messagesRepository.createQueryBuilder("messages");
 
     if (filter?.bubbleId) {
-      query = query.where('messages.bubble_id = :bubbleId');
+      query = query.where('bubble_id = :bubbleId');
     }
 
     return query.setParameters(filter);

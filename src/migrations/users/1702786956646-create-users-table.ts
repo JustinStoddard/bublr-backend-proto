@@ -13,16 +13,16 @@ export class Users1702786956646 implements MigrationInterface {
         email text not null,
         password text not null,
         account_type text not null,
-        strikes integer not null default 0
+        ban_status json not null default '{ "banExp": null, "offenses": 0, "strikes": 0 }'
       )
       `
     );
-  }
+  };
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `DROP TABLE "users"
       `
     )
-  }
+  };
 }

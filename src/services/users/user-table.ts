@@ -1,6 +1,6 @@
 import { BaseEntity, Column, CreateDateColumn, DataSource, Entity, IsNull, MoreThan, MoreThanOrEqual, PrimaryGeneratedColumn, Repository, UpdateDateColumn } from "typeorm";
 import { ColumnMetadata } from "typeorm/metadata/ColumnMetadata";
-import { AccountType, User, UserInput, UserPage, UserPatch, UsersFilter } from "./user-types";
+import { AccountType, BanStatus, User, UserInput, UserPage, UserPatch, UsersFilter } from "./user-types";
 
 @Entity("users")
 export class UserEntity extends BaseEntity {
@@ -33,8 +33,8 @@ export class UserEntity extends BaseEntity {
   @Column()
   accountType: AccountType;
 
-  @Column()
-  strikes: number;
+  @Column({type: "json", default: { banExp: null, offenses: 0, strikes: 0 }})
+  banStatus: BanStatus;
 };
 
 const mapEntity = (columns: ColumnMetadata[], obj: object): User => {
@@ -60,22 +60,19 @@ export class UsersTable {
   filterQuery = (filter: UsersFilter) => {
     let query = this.usersRepository.createQueryBuilder("users");
 
+    query = query.where('deleted_at is null')
+
     if (filter?.accountType) {
-      query = query.where('users.account_type = :accountType');
-    }
-    if (filter?.strikes) {
-      query = query.where({
-        strikes: MoreThanOrEqual(0),
-      });
+      query = query.andWhere('account_type = :accountType');
     }
     if (filter?.displayName) {
-      query = query.where('users.display_name = :displayName');
+      query = query.andWhere('display_name = :displayName');
     }
     if (filter?.handle) {
-      query = query.where('users.handle = :handle');
+      query = query.andWhere('handle = :handle');
     }
     if (filter?.email) {
-      query = query.where('users.email = :email');
+      query = query.andWhere('email = :email');
     }
 
     return query.setParameters(filter);

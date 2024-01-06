@@ -44,6 +44,7 @@ describe('bubble-table', () => {
     );
     const userService = new UserService(
       userTable,
+      () => {}
     );
 
     bubbleTable = new BubblesTable(
@@ -52,6 +53,7 @@ describe('bubble-table', () => {
     bubbleService = new BubbleService(
       bubbleTable,
       userService,
+      () => {},
     );
 
     const userInput: UserInput = {
