@@ -161,8 +161,6 @@ export class UserService {
     //Attempt to fetch user with email
     let user: User = await this.users.findOne(filter);
 
-    console.log("USER STUFF", user);
-
     //Throw not found error if user wasn't found
     if (!user) this.throwNotFoundError({ email: input.email });
 

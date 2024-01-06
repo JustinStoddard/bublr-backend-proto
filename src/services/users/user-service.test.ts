@@ -10,7 +10,7 @@ import { anyAlphaNumeric, anyId } from "../../common/utils/testutils";
 import { AuthContext } from "../../common/auth/auth-context";
 import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 
-describe.only("user-service", () => {
+describe("user-service", () => {
   let userService: UserService;
   let userDataSource: DataSource;
   let authContext: AuthContext;
@@ -174,7 +174,7 @@ describe.only("user-service", () => {
     expect(error.args.issue).to.equal(Issues.RESOURCE_NOT_AVAILABLE);
   });
 
-  it.only('Should delete user account if user has 3 strikes', async () => {
+  it('Should delete user account if user has 3 strikes', async () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
