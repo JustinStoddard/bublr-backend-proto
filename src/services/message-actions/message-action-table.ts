@@ -42,10 +42,10 @@ export class MessageActionsTable {
       query = query.where('message_actions.user_id = :userId');
     }
     if (filter?.messageId) {
-      query = query.where('message_actions.message_id = :messageId');
+      query = query.andWhere('message_actions.message_id = :messageId');
     }
     if (filter?.actionType) {
-      query = query.where('message_actions.action_type = :actionType');
+      query = query.andWhere('message_actions.action_type = :actionType');
     }
 
     return query.setParameters(filter);
