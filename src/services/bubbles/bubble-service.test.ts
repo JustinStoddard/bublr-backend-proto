@@ -5,7 +5,7 @@ import BubbleMigrations from "../../migrations/bubbles/Bubbles";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { get } from "../../common/utils/env";
 import { Bubble, BubbleInput, BubblePatch, BubblesFilter } from "./bubble-types";
-import { anyAlphaNumeric } from "../../common/utils/testutils";
+import { anyAlphaNumeric, anyEmail, anyPassword } from "../../common/utils/testutils";
 import { expect } from "chai";
 import { AuthContext } from "../../common/auth/auth-context";
 import { UserEntity, UsersTable } from "../users/user-table";
@@ -69,8 +69,8 @@ describe("bubble-service", () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: anyAlphaNumeric(),
+      email: anyEmail(),
+      password: anyPassword(),
       accountType: AccountType.Premium,
     };
     const user = await userService.register(userInput);

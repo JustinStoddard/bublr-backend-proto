@@ -5,7 +5,7 @@ import MessageMigrations from "../../migrations/messages/Messages";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { get } from "../../common/utils/env";
 import { MessageInput, MessagePatch, MessagesFilter } from "./message-types";
-import { anyAlphaNumeric } from "../../common/utils/testutils";
+import { anyAlphaNumeric, anyEmail, anyPassword } from "../../common/utils/testutils";
 import { expect } from "chai";
 import { AuthContext } from "../../common/auth/auth-context";
 import { BubbleEntity, BubblesTable } from "../bubbles/bubble-table";
@@ -70,8 +70,8 @@ describe("message-service", () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: anyAlphaNumeric(),
+      email: anyEmail(),
+      password: anyPassword(),
       accountType: AccountType.Premium,
     };
     const user = await userService.register(userInput);

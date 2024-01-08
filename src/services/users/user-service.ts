@@ -90,19 +90,15 @@ export class UserService {
     });
   };
 
-  throwBadArgumentError = (args: any) => {
+  assertRequiredArgument = (argument: string, value) => {
+    if (value !== undefined && value !== null) return;
     throw new AppError({
       code: ErrorCodes.ERR_BAD_INPUT,
       issue: Issues.REQUIRED_FIELD_MISSING,
       meta: {
-        ...args,
+        argument,
       },
     });
-  };
-
-  assertRequiredArgument = (argument: string, value) => {
-    if (value !== undefined && value !== null) return;
-    this.throwBadArgumentError({ argument });
   };
 
   assertArgumentUuid = (argument: string, value) => {

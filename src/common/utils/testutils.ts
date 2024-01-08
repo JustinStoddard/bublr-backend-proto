@@ -30,7 +30,26 @@ export const anyEmail = () => {
 };
 
 export const anyPassword = () => {
+  const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const symbols = '!@#$%^&*()_+';
 
+  const randomUppercase = uppercaseLetters[Math.floor(Math.random() * uppercaseLetters.length)];
+  const randomLowercase = lowercaseLetters[Math.floor(Math.random() * lowercaseLetters.length)];
+  const randomNumber = numbers[Math.floor(Math.random() * numbers.length)];
+  const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+
+  const randomChars = `${randomUppercase}${randomLowercase}${randomNumber}${randomSymbol}`;
+
+  let generatedPassword = randomChars;
+
+  while (generatedPassword.length < 8) {
+    const randomIndex = Math.floor(Math.random() * randomChars.length);
+    generatedPassword += randomChars[randomIndex];
+  }
+
+  return generatedPassword;
 };
 
 export const anyArrayOfStrings = (n: number = 5) => Array.from({ length: n }, _ => anyAlphaNumeric())

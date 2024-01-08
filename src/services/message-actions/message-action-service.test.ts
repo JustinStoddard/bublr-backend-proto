@@ -16,7 +16,7 @@ import { get } from "../../common/utils/env";
 import { UserService } from "../users/user-service";
 import { BubbleService } from "../bubbles/bubble-service";
 import { MessageService } from "../messages/message-service";
-import { anyAlphaNumeric } from "../../common/utils/testutils";
+import { anyAlphaNumeric, anyEmail, anyPassword } from "../../common/utils/testutils";
 import { AccountType, UserInput } from "../users/user-types";
 import { BubbleInput } from "../bubbles/bubble-types";
 import { MessageActionFilter, MessageActionInput, MessageActionType } from "./message-action-types";
@@ -82,8 +82,8 @@ describe("message-action-service", () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: anyAlphaNumeric(),
+      email: anyEmail(),
+      password: anyPassword(),
       accountType: AccountType.Premium,
     };
     const user = await userService.register(userInput);

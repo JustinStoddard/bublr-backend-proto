@@ -6,7 +6,7 @@ import UserMigrations from "../../migrations/users/Users";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { AccountType, UserInput, UserLoginInput, UserPatch, UsersFilter } from "./user-types";
 import { expect } from "chai";
-import { anyAlphaNumeric, anyId } from "../../common/utils/testutils";
+import { anyAlphaNumeric, anyEmail, anyPassword } from "../../common/utils/testutils";
 import { AuthContext } from "../../common/auth/auth-context";
 import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 
@@ -14,7 +14,7 @@ describe("user-service", () => {
   let userService: UserService;
   let userDataSource: DataSource;
   let authContext: AuthContext;
-  let password: string = anyAlphaNumeric();
+  let password: string = anyPassword();
 
   before(async () => {
     const url = new URL(get('POSTGRES_URL'));
@@ -45,7 +45,7 @@ describe("user-service", () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
+      email: anyEmail(),
       password,
       accountType: AccountType.Premium,
     };
@@ -81,8 +81,8 @@ describe("user-service", () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
+      email: anyEmail(),
+      password: anyPassword(),
       accountType: AccountType.Premium,
     };
 
@@ -137,8 +137,8 @@ describe("user-service", () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
+      email: anyEmail(),
+      password: anyPassword(),
       accountType: AccountType.Premium,
     };
 
@@ -178,8 +178,8 @@ describe("user-service", () => {
     const userInput: UserInput = {
       displayName: "Jahstin",
       handle: anyAlphaNumeric(),
-      email: anyAlphaNumeric(),
-      password: "stoic",
+      email: anyEmail(),
+      password: anyPassword(),
       accountType: AccountType.Premium,
     };
 
