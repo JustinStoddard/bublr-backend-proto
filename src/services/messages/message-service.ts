@@ -8,7 +8,7 @@ import { BubbleService } from '../bubbles/bubble-service';
 import { UserService } from '../users/user-service';
 import { get } from '../../common/utils/env';
 import { WebSocketEventType } from '../../common/types/web-socket';
-import { badWords } from '../../common/words/bad-words';
+import { badWords } from '../../common/words/bad-words-VIEW-AT-YOUR-OWN-RISK';
 
 export class MessageService {
   public log = LogFactory.getLogger(LogCategory.request);
