@@ -8,6 +8,7 @@ import { BubbleService } from '../bubbles/bubble-service';
 import { UserService } from '../users/user-service';
 import { get } from '../../common/utils/env';
 import { WebSocketEventType } from '../../common/types/web-socket';
+import { badWords } from '../../common/words/bad-words';
 
 export class MessageService {
   public log = LogFactory.getLogger(LogCategory.request);
@@ -33,6 +34,16 @@ export class MessageService {
     throw new AppError({
       code: ErrorCodes.ERR_FORBIDDEN,
       issue: Issues.RESOURCE_NOT_AVAILABLE,
+      meta: {
+        ...args,
+      }
+    });
+  };
+
+  throwInappropriateContentError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_BAD_INPUT,
+      issue: Issues.INAPPROPRIATE_MESSAGE_CONTENT,
       meta: {
         ...args,
       }
@@ -65,9 +76,24 @@ export class MessageService {
     return uuidParse(value);
   };
 
+  assertMessageContent = (content: string) => {
+    const lowerCaseContent: string = content.toLocaleLowerCase();
+    const inappropriateWords: string[] = [];
+
+    for (const word of badWords) {
+      if (lowerCaseContent.includes(word)) {
+        inappropriateWords.push(word); // Found an inappropriate word
+      }
+    }
+
+    if (inappropriateWords.length > 0) this.throwInappropriateContentError({ inappropriateWords });
+    return;
+  };
+
   assertMessageInput = (input: MessageInput) => {
     this.assertRequiredArgument('parentBubbleId', input.bubbleId);
     this.assertRequiredArgument('content', input.content);
+    this.assertMessageContent(input.content);
   };
 
   assertMessagePatch = (patch: MessagePatch) => {

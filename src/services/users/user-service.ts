@@ -17,6 +17,19 @@ export class UserService {
     private sendWebSocketEvent: (type: WebSocketEventType, corrId: string) => void,
   ) {};
 
+  private assertUserEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) this.throwBadEmailError({ email });
+    return;
+  };
+  
+  private assertUserPassword = (password: string) => {
+    //Asserts a password format. One capital letter, one number, one symbol, minimum 6 characters
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[\d])(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{6,}$/;
+    if (passwordRegex.test(password)) this.throwBadPasswordError({ password });
+    return;
+  };
+
   throwNotFoundError = (args: any) => {
     throw new AppError({
       code: ErrorCodes.ERR_NOT_FOUND,
@@ -57,16 +70,39 @@ export class UserService {
     });
   };
 
-  assertRequiredArgument = (argument: string, value) => {
-    if (value !== undefined && value !== null) return;
+  throwBadEmailError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_BAD_INPUT,
+      issue: Issues.INVALID_EMAIL_ADDRESS,
+      meta: {
+        ...args,
+      },
+    });
+  };
 
+  throwBadPasswordError = (args: any) => {
+    throw new AppError({
+      code: ErrorCodes.ERR_BAD_INPUT,
+      issue: Issues.INVALID_PASSWORD_FORMAT,
+      meta: {
+        ...args,
+      },
+    });
+  };
+
+  throwBadArgumentError = (args: any) => {
     throw new AppError({
       code: ErrorCodes.ERR_BAD_INPUT,
       issue: Issues.REQUIRED_FIELD_MISSING,
       meta: {
-        argument,
+        ...args,
       },
     });
+  };
+
+  assertRequiredArgument = (argument: string, value) => {
+    if (value !== undefined && value !== null) return;
+    this.throwBadArgumentError({ argument });
   };
 
   assertArgumentUuid = (argument: string, value) => {
@@ -88,6 +124,8 @@ export class UserService {
     this.assertRequiredArgument('email', input.email);
     this.assertRequiredArgument('password', input.password);
     this.assertRequiredArgument('accountType', input.accountType);
+    this.assertUserEmail(input.email);
+    this.assertUserPassword(input.password);
   };
 
   assertUserLoginInput = (input: UserLoginInput) => {
@@ -111,8 +149,17 @@ export class UserService {
 
   private createJwt = (user: User): string => {
     const secret = get('BUBLR_JWT_SECRET');
-    const token = jwt.sign({ ...user }, secret, { expiresIn: '4h' });
+    const token = jwt.sign({ ...user }, secret, { expiresIn: '8h' });
     return token;
+  };
+
+  private hashedPassword = async (password: string): Promise<string> => {
+    return await bcrypt.hash(password, 10);
+  };
+
+  private comparePasswords = async (given: string, stored: string) => {
+    const passwordMatch = await bcrypt.compare(given, stored);
+    if (!passwordMatch) this.throwPasswordIncorrectError({});
   };
 
   register = async (input: UserInput): Promise<{ user: User, token: string }> => {
@@ -132,7 +179,7 @@ export class UserService {
     if (existingUser) this.throwUserAlreadyExistsError({});
 
     //Encrypt password passed from input
-    const hashedPassword = await bcrypt.hash(input.password, 10);
+    const hashedPassword = await this.hashedPassword(input.password);
 
     //Override password field on input so encrypted password is whats stored in database
     input.password = hashedPassword;
@@ -168,10 +215,7 @@ export class UserService {
     if (user.banStatus.banExp && !this.isCurrentDateAheadOfBanDate(user.banStatus.banExp)) this.throwForbiddenError({ banStatus: user.banStatus });
 
     //Check if the password passed in input matched the password saved in database
-    const passwordMatch = await bcrypt.compare(input.password, user.password);
-
-    //Throw password incorrect error if passwords dont match
-    if (!passwordMatch) this.throwPasswordIncorrectError({});
+    await this.comparePasswords(input.password, user.password);
 
     //Log that a user logged in
     this.log.info({ message: `logged in user: ${user.id}` });
@@ -254,7 +298,7 @@ export class UserService {
     //Throw forbidden error if user ids don't match
     if (id !== ctx.id) this.throwForbiddenError({ resource: "user" });
 
-    //Fetch iser
+    //Fetch user
     let user: User = await this.users.get(id);
 
     //Throw not found error if user didn't exist
@@ -313,6 +357,8 @@ export class UserService {
 
     //Delete user
     user = await this.users.delete(id);
+
+    this.sendWebSocketEvent(WebSocketEventType.UserUpdated, user.id);
 
     //Log user deleted a user
     this.log.info({ message: `user: ${ctx.id} deleted user: ${user.id}` });

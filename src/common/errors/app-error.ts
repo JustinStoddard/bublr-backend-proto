@@ -32,4 +32,7 @@ export enum Issues {
   DATABASE_FAILED_TO_START = 'failed-to-connect-to-database',
   INTERNAL_SERVER_ERROR = 'internal-server-error',
   RESOURCE_NOT_AVAILABLE = 'resource-not-available',
+  INVALID_EMAIL_ADDRESS = 'invalid-email-address',
+  INVALID_PASSWORD_FORMAT = 'invalid-password-format',
+  INAPPROPRIATE_MESSAGE_CONTENT = 'inappropriate-message-content',
 };
