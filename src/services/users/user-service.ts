@@ -24,8 +24,8 @@ export class UserService {
   };
   
   private assertUserPassword = (password: string) => {
-    //Asserts a password format. One capital letter, one number, one symbol, minimum 6 characters
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[\d])(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{6,}$/;
+    //Asserts a password format. One capital letter, one number, one symbol, minimum 8 characters
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[\d])(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}$/;
     if (passwordRegex.test(password)) this.throwBadPasswordError({ password });
     return;
   };

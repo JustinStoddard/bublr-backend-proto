@@ -10,11 +10,13 @@ import { anyAlphaNumeric, anyEmail, anyPassword } from "../../common/utils/testu
 import { AuthContext } from "../../common/auth/auth-context";
 import { AppError, ErrorCodes, Issues } from "../../common/errors/app-error";
 
-describe("user-service", () => {
+describe.only("user-service", () => {
   let userService: UserService;
   let userDataSource: DataSource;
   let authContext: AuthContext;
   let password: string = anyPassword();
+
+  console.log("LOOK HERE", password);
 
   before(async () => {
     const url = new URL(get('POSTGRES_URL'));
